@@ -5,15 +5,9 @@
 
 using namespace std;
 
-void checkMessage(const string& command) {
-    if (command == "inser") {
-
-    }
-}
-
 int main() {
     const string aggregatorQueue{"aggregator"};
-    const string userQueue{"user_queue"};
+    const string userQueue{"userQueue"};
     const std::string url{"amqp://guest:guest@localhost:5672/"};
 
     boost::asio::io_service service;
