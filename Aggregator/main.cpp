@@ -2,6 +2,7 @@
 #include <amqpcpp.h>
 #include <amqpcpp/libboostasio.h>
 #include <boost/asio/io_service.hpp>
+#include <nlohmann/json.hpp>
 
 using namespace std;
 
@@ -29,8 +30,10 @@ int main() {
         // Mesajın ham verisini al
         const char *body = message.body();
 
+        const std::string command{body, bodySize};
+
         // user_queue ya istek atıcak
-        if (const std::string command{body, bodySize}; command == "insertUser") {
+        if (nlohmann::json jsonData = nlohmann::json::parse(command); jsonData["action"] == "insertUser") {
             channel.publish("", userQueue, command);
         }
 
