@@ -7,7 +7,9 @@ find_package(amqpcpp CONFIG REQUIRED)
 find_package(Boost REQUIRED COMPONENTS system)
 find_package(OpenSSL REQUIRED)
 
-add_executable(Aggregator main.cpp)
+add_executable(Aggregator main.cpp
+        queue-map.hpp
+        configuration-helper.hpp)
 
 target_link_libraries(Aggregator PRIVATE
         amqpcpp

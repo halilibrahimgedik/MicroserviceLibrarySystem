@@ -4,12 +4,17 @@
 #include <boost/asio/io_service.hpp>
 #include <nlohmann/json.hpp>
 
+#include "configuration-helper.hpp"
+#include "queue-map.hpp"
+
 using namespace std;
+using json = nlohmann::json;
 
 int main() {
-    const string aggregatorQueue{"aggregator"};
-    const string userQueue{"userQueue"};
-    const std::string url{"amqp://guest:guest@localhost:5672/"};
+    const ConfigurationHelper& configuration = ConfigurationHelper::getInstance();
+    const string aggregatorQueue {configuration.getValue("aggregator")};
+    const string userQueue{configuration.getValue("userQueue")};
+    const string url{configuration.getValue("AMQPConnectionUrl")};
 
     boost::asio::io_service service;
     AMQP::LibBoostAsioHandler handler(service);
@@ -19,26 +24,34 @@ int main() {
     channel.declareQueue(aggregatorQueue);
     channel.declareQueue(userQueue);
 
+    // note => onRecieved() metodu kuyruğa bir mesaj ulaştığında tetiklenir. Mesajın içeriğini işlemek veya
+    // ona göre bir işlem yapmak için kullanılır.
     channel.consume(aggregatorQueue)
-    .onReceived([&channel, userQueue](const AMQP::Message &message, const uint64_t deliveryTag, bool redelivered) {
-        // --- std::cout << message.body(); ---
-        // Bu işlemleri yapmamızın nedeni, AMQP::Message nesnesinin body() fonksiyonunun ham veri ve boyutunu içermesi ve doğrudan std::string'e dönüştürülmesi sırasında veri kaybı veya hatalar yaşanabilmesidir.
+    .onReceived([&channel, userQueue](const AMQP::Message &message, const uint64_t deliveryTag,
+                                      bool redelivered) {
+        // Bu işlemleri yapmamızın nedeni, AMQP::Message nesnesinin body() fonksiyonunun ham veri ve boyutunu içermesi,
+        // ve doğrudan veriyi std::string'e dönüştürme sırasında veri kaybı veya hatalar yaşanabilmesidir.
+        // cout << message.body(); gibi (hatalı dönüşüm)
 
-        // Mesajın boyutunu al =>  Verinin boyutunu bilmeden doğrudan std::string'e dönüştürmek, veri kaybına veya hatalı karakterler görünmesine yol açabilir. Verinin uzunluğunu bilmek, bu veriyi doğru şekilde işlemek için önemlidir.
-        const size_t bodySize = message.bodySize();
+        // Mesajın boyutunu al =>  Verinin boyutunu bilmeden doğrudan std::string'e dönüştürmek, veri kaybına veya hatalı
+        // karakterler görünmesine yol açabilir. Verinin uzunluğunu bilmek, bu veriyi doğru şekilde işlemek için önemlidir.
+        const auto bodySize = message.bodySize();
+        const auto body = message.body(); // Mesajın ham verisini al
 
-        // Mesajın ham verisini al
-        const char *body = message.body();
+        const string jsonString{body, bodySize};
+        json jsonData = json::parse(jsonString);
 
-        const std::string command{body, bodySize};
-
-        // user_queue ya istek atıcak
-        if (nlohmann::json jsonData = nlohmann::json::parse(command); jsonData["action"] == "insertUser") {
-            channel.publish("", userQueue, command);
+        if (const auto iterator{QueueMap::actionQueueMap.find(jsonData["action"].get<string>())};
+            iterator != QueueMap::actionQueueMap.end())
+        {
+            const auto queue = iterator->second; // bize kuyruğu verecek
+            channel.publish("", queue, jsonString);
+            channel.ack(deliveryTag);
+        }else {
+            std::cerr << "Action not found in the QueueMap: " << jsonData["action"].get<string>() << endl;
+            // todo: action değeri map'de yoksa kuyruğa mesaj gönderemeyeceğiz, ekstra işlem yapılabilir.
+            // RabbitMQ mesajın işlenmediği bilmeli araştır
         }
-
-        // Mesajı onayla
-        channel.ack(deliveryTag);
     });
 
     service.run();
