@@ -27,8 +27,7 @@ int main() {
     // note => onRecieved() metodu kuyruğa bir mesaj ulaştığında tetiklenir. Mesajın içeriğini işlemek veya
     // ona göre bir işlem yapmak için kullanılır.
     channel.consume(aggregatorQueue)
-    .onReceived([&channel, userQueue](const AMQP::Message &message, const uint64_t deliveryTag,
-                                      bool redelivered) {
+    .onReceived([&channel](const AMQP::Message &message, const uint64_t deliveryTag, bool redelivered) {
         // Bu işlemleri yapmamızın nedeni, AMQP::Message nesnesinin body() fonksiyonunun ham veri ve boyutunu içermesi,
         // ve doğrudan veriyi std::string'e dönüştürme sırasında veri kaybı veya hatalar yaşanabilmesidir.
         // cout << message.body(); gibi (hatalı dönüşüm)

@@ -7,11 +7,12 @@
 #include <string>
 
 using namespace std;
-
+using json = nlohmann::json;
 int main(){
 
     const string userQueue{"userQueue"};
     const std::string url{"amqp://guest:guest@localhost:5672/"};
+    const string gatewayQueue {"gatewayQueue"};
 
     boost::asio::io_service service;
     AMQP::LibBoostAsioHandler handler(service);
@@ -20,16 +21,30 @@ int main(){
 
     channel.declareQueue(userQueue);
 
-    channel.consume(userQueue).onReceived([&channel](const AMQP::Message& message, const uint64_t deliveryTag, bool redelivered) {
+    channel.consume(userQueue).onReceived([&channel, gatewayQueue](const AMQP::Message& message,
+                                                const uint64_t deliveryTag, bool redelivered)
+    {
         // user kuyruğundan mesajı alalım
         const size_t bodySize = message.bodySize();
         const char *body = message.body();
         const std::string command{body, bodySize};
 
-        if (nlohmann::json jsonData = nlohmann::json::parse(command); jsonData["action"] == "insertUser") {
+        // user ekleme için
+        if (json jsonData = json::parse(command); jsonData["action"] == "insertUser") {
             const User user {jsonData["body"]["fullname"].get<string>(), jsonData["body"]["email"].get<string>()};
-            UserApplicationService::createUser(user);
+            const auto newUser = UserApplicationService::createUser(user);
 
+            string stringData;
+            try {
+                json jsonNewUser;
+                jsonNewUser["body"] = newUser.toJson();
+                jsonNewUser["action"] = "result";
+                stringData = jsonNewUser.dump();
+            } catch (json::exception &e) {
+                cerr << e.what() << endl;
+            }
+
+            channel.publish("", gatewayQueue, stringData);
             channel.ack(deliveryTag);
         }
     });

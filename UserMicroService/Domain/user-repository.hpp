@@ -7,11 +7,31 @@
 using namespace std;
 namespace UserRepository {
 
-    void inline createUser(const bsoncxx::builder::basic::document& document) {
+    User inline getUserById(const bsoncxx::oid& id) {
         const auto& instance = DBConnection::getInstance();
-        auto collection = instance.getCollection("UsersDb","users");
+        auto collection = instance.getCollection();
 
-        collection.insert_one(document.view());
+        bsoncxx::builder::basic::document filter{};
+        filter.append(kvp("_id",id));
+
+        const auto result = collection.find_one(filter.view());
+
+        auto user = UserFactory::getUserById(result.value());
+
+        return user;
+    }
+
+    User inline createUser(const bsoncxx::builder::basic::document& document) {
+        const auto& instance = DBConnection::getInstance();
+        auto collection = instance.getCollection();
+
+        if(const auto result = collection.insert_one(document.view())) {
+            const bsoncxx::oid id = result->inserted_id().get_oid().value;
+
+            return getUserById(id);
+        }
+
+        throw runtime_error("Could not create user");
     }
 
 }

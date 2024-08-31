@@ -5,8 +5,8 @@
 
 namespace UserApplicationService {
 
-    void inline createUser(const User& user) {
-        UserService::createUser(user);
+    User inline createUser(const User& user) {
+        return UserService::createUser(user);
     }
 
 }

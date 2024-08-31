@@ -6,9 +6,11 @@
 
 namespace UserService {
 
-    void inline createUser(const User& user) {
+    User inline createUser(const User& user) {
+        // todo: Validation işlemleri yapılacak (user bir veya birden fazla alanı boş olabilir)
         const bsoncxx::builder::basic::document document = UserFactory::generateUser(user);
-        UserRepository::createUser(document);
+
+        return UserRepository::createUser(document);
     }
 }
 

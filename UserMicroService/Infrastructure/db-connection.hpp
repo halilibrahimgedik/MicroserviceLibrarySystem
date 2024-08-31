@@ -23,7 +23,8 @@ public:
         return client.database(dbName);
     }
 
-    [[nodiscard]] mongocxx::collection getCollection(const std::string& databaseName, const std::string& collectionName) const {
+    [[nodiscard]] mongocxx::collection getCollection(const std::string& databaseName = "UsersDb",
+                                                    const std::string& collectionName = "users") const {
         const auto database = getDatabase(databaseName);
         return database[collectionName];
     }
