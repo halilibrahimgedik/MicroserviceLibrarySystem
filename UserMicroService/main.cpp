@@ -31,13 +31,12 @@ int main(){
 
         // user ekleme için
         if (json jsonData = json::parse(command); jsonData["action"] == "insertUser") {
-            const User user {jsonData["body"]["fullname"].get<string>(), jsonData["body"]["email"].get<string>()};
+            const User user {jsonData["fullname"].get<string>(), jsonData["email"].get<string>()};
             const auto newUser = UserApplicationService::createUser(user);
 
             string stringData;
             try {
-                json jsonNewUser;
-                jsonNewUser["body"] = newUser.toJson();
+                json jsonNewUser = newUser.toJson();
                 jsonNewUser["action"] = "result";
                 stringData = jsonNewUser.dump();
             } catch (json::exception &e) {
