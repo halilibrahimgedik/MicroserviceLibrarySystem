@@ -9,6 +9,10 @@ namespace UserApplicationService {
         return UserService::createUser(user);
     }
 
+    vector<User> inline getUserList() {
+        return UserService::getUserList();
+    }
+
 }
 
 #endif //USER_APPLICATION_SERVICE_HPP

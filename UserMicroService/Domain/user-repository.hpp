@@ -2,8 +2,9 @@
 #define USER_REPOSITORY_HPP
 
 #include <string>
-
+#include "user-factory.hpp"
 #include "../Infrastructure/db-connection.hpp"
+
 using namespace std;
 namespace UserRepository {
 
@@ -16,7 +17,7 @@ namespace UserRepository {
 
         const auto result = collection.find_one(filter.view());
 
-        auto user = UserFactory::getUserById(result.value());
+        auto user = UserFactory::generateUserById(result.value());
 
         return user;
     }
@@ -32,6 +33,15 @@ namespace UserRepository {
         }
 
         throw runtime_error("Could not create user");
+    }
+
+    vector<User> inline getUserList() {
+        const auto& instance = DBConnection::getInstance();
+        auto collection = instance.getCollection("UsersDb","users");
+
+        auto cursor = collection.find({});
+
+        return UserFactory::generateUserList(cursor);
     }
 
 }

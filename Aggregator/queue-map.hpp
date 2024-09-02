@@ -12,14 +12,16 @@ namespace QueueMap {
 
     inline unordered_map<string, string> actionQueueMap {
         {"result", gatewayQueue},
+        {"getUserList", userQueue},
         {"insertUser", userQueue},
         {"updateUser", userQueue},
         {"deleteUser", userQueue},
-        {"getUser", userQueue},
+        {"getUserById", userQueue},
+        {"getBookList", userQueue},
         {"insertBook", userQueue},
         {"updateBook", userQueue},
         {"deleteBook", userQueue},
-        {"getBook", userQueue},
+        {"getBookById", userQueue},
     };
 }
 

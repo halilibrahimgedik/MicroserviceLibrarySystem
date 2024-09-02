@@ -11,8 +11,8 @@ using json = nlohmann::json;
 int main(){
 
     const string userQueue{"userQueue"};
+    const string aggregatorQueue{"aggregator"};
     const std::string url{"amqp://guest:guest@localhost:5672/"};
-    const string gatewayQueue {"gatewayQueue"};
 
     boost::asio::io_service service;
     AMQP::LibBoostAsioHandler handler(service);
@@ -21,10 +21,9 @@ int main(){
 
     channel.declareQueue(userQueue);
 
-    channel.consume(userQueue).onReceived([&channel, gatewayQueue](const AMQP::Message& message,
+    channel.consume(userQueue).onReceived([&channel, aggregatorQueue](const AMQP::Message& message,
                                                 const uint64_t deliveryTag, bool redelivered)
     {
-        // user kuyruğundan mesajı alalım
         const size_t bodySize = message.bodySize();
         const char *body = message.body();
         const std::string command{body, bodySize};
@@ -43,9 +42,29 @@ int main(){
                 cerr << e.what() << endl;
             }
 
-            channel.publish("", gatewayQueue, stringData);
-            channel.ack(deliveryTag);
+            channel.publish("", aggregatorQueue, stringData);
         }
+
+        if(json jsonData = json::parse(command); jsonData["action"] == "getUserList") {
+            const auto users = UserApplicationService::getUserList();
+
+            json jsonSendUser;
+            json jsonArray = json::array();
+            jsonSendUser["action"] = "result";
+            try {
+                for(auto& user : users) {
+                    json jsonUser = user.toJson();
+                    jsonArray.push_back(jsonUser);
+                }
+            }catch (json::exception& e) {
+                cerr << e.what() << endl;
+            };
+            jsonSendUser["data"] = jsonArray;
+
+            channel.publish("",aggregatorQueue, jsonSendUser.dump());
+        }
+
+        channel.ack(deliveryTag);
     });
 
     service.run();

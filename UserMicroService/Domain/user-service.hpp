@@ -12,6 +12,10 @@ namespace UserService {
 
         return UserRepository::createUser(document);
     }
+
+    vector<User> inline getUserList() {
+        return UserRepository::getUserList();
+    }
 }
 
 #endif //USER_SERVICE_HPP

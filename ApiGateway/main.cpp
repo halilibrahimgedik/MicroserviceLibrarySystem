@@ -39,10 +39,10 @@ nlohmann::json consume() {
         });
 
     while (!messageReceived.load()) {
-        service.run_for(std::chrono::milliseconds(60));
+        // std::this_thread::sleep_for(1000ms);
+        service.run_for(std::chrono::milliseconds(5));
     }
 
-    cout << "sonuç: "  << receivedMessage << endl;
     json jsonMessage = json::parse(receivedMessage);
     if(jsonMessage.contains("action")) {
         jsonMessage.erase("action");
