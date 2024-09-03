@@ -1,7 +1,7 @@
 #ifndef USER_APPLICATION_SERVICE_HPP
 #define USER_APPLICATION_SERVICE_HPP
-#include "../Domain/user-service.hpp"
-#include "../Domain/user.hpp"
+#include "../domain/user-service.hpp"
+#include "../domain/user.hpp"
 
 namespace UserApplicationService {
 

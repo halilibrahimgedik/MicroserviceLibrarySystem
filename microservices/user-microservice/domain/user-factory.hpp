@@ -28,7 +28,6 @@ namespace UserFactory {
 
     vector<User> inline generateUserList(mongocxx::cursor& cursor) {
         vector<User> users;
-        /*users.reserve(std::distance(cursor.begin(), cursor.end()));*/
 
         for(auto& doc : cursor) {
             User user;
@@ -36,12 +35,6 @@ namespace UserFactory {
             user.fullname = doc["fullname"].get_string().value;
             user.email = doc["email"].get_string().value;
             users.push_back(std::move(user));
-        }
-
-        if (cursor.begin() == cursor.end()) {
-            // Hata mesajı veya uygun işlem
-            cerr << "Cursor is empty." << endl;
-            return users;
         }
 
         return users;

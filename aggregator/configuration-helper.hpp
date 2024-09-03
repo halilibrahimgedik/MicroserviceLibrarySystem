@@ -13,7 +13,7 @@ private:
     ConfigurationHelper() { loadAppConfigFile(); }
     nlohmann::json jsonData;
 
-    void loadAppConfigFile(const string& filePath = R"(/home/halil/Desktop/Projects/MicroLibSystem/Aggregator/app-config.json)")
+    void loadAppConfigFile(const string& filePath = R"(/home/halil/Desktop/Projects/MicroLibSystem/aggregator/app-config.json)")
     {
         if (ifstream file{filePath}; file.is_open()) {
             file >> jsonData; // dosyayı json nesnesine aktaralım
