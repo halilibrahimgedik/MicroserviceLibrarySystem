@@ -12,12 +12,13 @@ find_package(bsoncxx CONFIG REQUIRED)
 
 
 add_executable(UserMicroService main.cpp
-        Domain/user.hpp
-        Domain/user-repository.hpp
-        Domain/user-factory.hpp
-        Domain/user-service.hpp
-        Infrastructure/db-connection.hpp
-        Application/user-application-service.hpp)
+        domain/user.hpp
+        domain/user-repository.hpp
+        domain/user-factory.hpp
+        domain/user-service.hpp
+        infrastructure/db-connection.hpp
+        application/user-application-service.hpp
+)
 
 target_link_libraries(UserMicroService PRIVATE
         amqpcpp

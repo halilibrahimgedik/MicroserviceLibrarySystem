@@ -3,7 +3,7 @@
 
 #include <string>
 #include "user-factory.hpp"
-#include "../Infrastructure/db-connection.hpp"
+#include "../infrastructure/db-connection.hpp"
 
 using namespace std;
 namespace UserRepository {
