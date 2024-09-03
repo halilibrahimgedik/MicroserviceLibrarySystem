@@ -19,9 +19,6 @@ int main() {
 
         const json jsonData = json::parse(command);
 
-        std::cout << jsonData["requestId"];
-        std::cout << jsonData["requestId"].get<std::string>();
-        std::cout << jsonData["requestId"].dump();
         if (jsonData["action"] == "insertUser") {
             const User user{jsonData["fullname"].get<string>(), jsonData["email"].get<string>()};
             const auto newUser = UserApplicationService::createUser(user);

@@ -12,7 +12,10 @@ find_package(OpenSSL REQUIRED)
 
 add_executable(api-gateway main.cpp
         ../infrastructure/rabbit-mq-adapter.hpp
-        ../infrastructure/rabbit-mq-connection-handler.hpp)
+        ../infrastructure/rabbit-mq-connection-handler.hpp
+        ../infrastructure/utility.hpp
+        ../libs/libcpp-event-hub/src/libcpp-event-hub.hpp
+)
 
 target_link_libraries(api-gateway PRIVATE
         Crow::Crow

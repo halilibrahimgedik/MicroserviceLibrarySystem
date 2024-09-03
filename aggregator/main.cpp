@@ -27,11 +27,11 @@ int main() {
         if (const auto iterator{QueueMap::actionQueueMap.find(jsonData["action"].get<string>())};
             iterator != QueueMap::actionQueueMap.end())
         {
-            const auto queue = iterator->second;
-            adapter.sendMessage(queue, jsonString);
+            const auto queueName = iterator->second;
+            adapter.sendMessage(queueName, jsonString);
             adapter.ack(deliveryTag);
         } else {
-            std::cerr << "Action not found in the QueueMap: " << jsonData["action"].get<string>() << endl;
+            std::cerr << "action not found in the QueueMap: " << jsonData["action"].get<string>() << endl;
         }
     });
 
