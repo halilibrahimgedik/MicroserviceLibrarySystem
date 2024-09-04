@@ -2,6 +2,7 @@
 #include <nlohmann/json.hpp>
 #include "../../infrastructure/rabbit-mq-adapter.hpp"
 #include "application/user-application-service.hpp"
+#include "../../libs/libcpp-event-hub/src/libcpp-event-hub.hpp"
 
 using namespace std;
 using json = nlohmann::json;
@@ -14,42 +15,54 @@ int main() {
     auto& adapter = RabbitMQAdapter::getInstance();
     adapter.init(url);
 
-    adapter.consume(userQueue, [&adapter, aggregatorQueue](const std::string_view& body, uint64_t deliveryTag, bool redelivered) {
-        const std::string command(body.data(), body.size());
+    adapter.consume("user.insert", [&adapter, &aggregatorQueue](const std::string_view& body, const uint64_t deliveryTag, bool redelivered) {
+        const std::string message(body.data(), body.size());
+        const json jsonData = json::parse(message);
 
-        const json jsonData = json::parse(command);
+        const User user{jsonData["fullname"].get<string>(), jsonData["email"].get<string>()};
+        const auto newUser = UserApplicationService::createUser(user);
 
-        if (jsonData["action"] == "insertUser") {
-            const User user{jsonData["fullname"].get<string>(), jsonData["email"].get<string>()};
-            const auto newUser = UserApplicationService::createUser(user);
+        json jsonNewUser;
+        jsonNewUser["action"] = "result";
+        jsonNewUser["data"] = newUser.toJson();
+        jsonNewUser["requestId"] = jsonData["requestId"];
 
-            json jsonNewUser;
-            jsonNewUser["action"] = "result";
-            jsonNewUser["data"] = newUser.toJson();
-            jsonNewUser["requestId"] = jsonData["requestId"];
+        adapter.sendMessage(aggregatorQueue, jsonNewUser.dump());
+        adapter.ack(deliveryTag);
+    });
 
-            adapter.sendMessage(aggregatorQueue, jsonNewUser.dump());
-            adapter.ack(deliveryTag);
+    adapter.consume("user.getList", [&adapter, &aggregatorQueue](const std::string_view& body, const uint64_t deliveryTag, bool redelivered) {
+
+        const std::string message(body.data(), body.size());
+        const json jsonData = json::parse(message);
+
+        const auto users = UserApplicationService::getUserList();
+        json jsonSendUser;
+        jsonSendUser["action"] = "result";
+        json jsonArray = json::array();
+
+        for (const auto &user: users) {
+            jsonArray.push_back(user.toJson());
         }
 
-        if (jsonData["action"] == "getUserList") {
-            const auto users = UserApplicationService::getUserList();
+        jsonSendUser["data"] = jsonArray;
+        jsonSendUser["requestId"] = jsonData["requestId"];
 
-            json jsonSendUser;
-            jsonSendUser["action"] = "result";
-            json jsonArray = json::array();
+        adapter.sendMessage(aggregatorQueue, jsonSendUser.dump());
+        adapter.ack(deliveryTag);
+    });
 
-            for (const auto& user : users) {
-                jsonArray.push_back(user.toJson());
-            }
 
-            jsonSendUser["data"] = jsonArray;
-            jsonSendUser["requestId"] = jsonData["requestId"];
+    adapter.consume("user.getById", [&adapter, aggregatorQueue](const std::string_view& body, const uint64_t deliveryTag, bool redelivered) {
 
-            adapter.sendMessage(aggregatorQueue, jsonSendUser.dump());
+    });
 
-            adapter.ack(deliveryTag);
-        }
+    adapter.consume("user.delete", [&adapter, aggregatorQueue](const std::string_view& body, const uint64_t deliveryTag, bool redelivered) {
+
+    });
+
+    adapter.consume("user.update", [&adapter, aggregatorQueue](const std::string_view& body, const uint64_t deliveryTag, bool redelivered) {
+
     });
 
     adapter.start();
