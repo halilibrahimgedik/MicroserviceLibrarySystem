@@ -44,6 +44,32 @@ namespace UserRepository {
         return UserFactory::generateUserList(cursor);
     }
 
+    void inline removeUserById(const bsoncxx::oid& id) {
+        const auto& instance = DBConnection::getInstance();
+        auto collection = instance.getCollection();
+
+        bsoncxx::builder::basic::document filter{};
+        filter.append(kvp("_id", id));
+
+        collection.delete_one(filter.view());
+    }
+
+    void inline updateUser(User& user) {
+        const auto& instance = DBConnection::getInstance();
+        auto collection = instance.getCollection();
+
+        bsoncxx::builder::basic::document filter{};
+        filter.append( kvp("_id", user.id));
+
+        bsoncxx::builder::basic::document updateFilter{};
+        updateFilter.append(kvp("$set", make_document(
+            kvp("fullname", user.fullname),
+            kvp("email", user.email)))
+        );
+
+        collection.update_one(filter.view(), updateFilter.view());
+    }
+
 }
 
 #endif //USER_REPOSITORY_HPP

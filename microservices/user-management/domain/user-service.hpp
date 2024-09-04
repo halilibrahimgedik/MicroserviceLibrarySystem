@@ -21,6 +21,14 @@ namespace UserService {
     User inline getUserById(const bsoncxx::oid& id) {
         return UserRepository::getUserById(id);
     }
+
+    void inline deleteUserById(const bsoncxx::oid& id) {
+        UserRepository::removeUserById(id);
+    }
+
+    void inline updateUser(User& user) {
+        UserRepository::updateUser(user);
+    }
 }
 
 #endif //USER_SERVICE_HPP

@@ -17,6 +17,14 @@ namespace UserApplicationService {
         return UserService::getUserById(id);
     }
 
+    void inline deleteUserById(const bsoncxx::oid& id) {
+        UserService::deleteUserById(id);
+    }
+
+    void inline updateUser(User& user) {
+        UserService::updateUser(user);
+    }
+
 }
 
 #endif //USER_APPLICATION_SERVICE_HPP
