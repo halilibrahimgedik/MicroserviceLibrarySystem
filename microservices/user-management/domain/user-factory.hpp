@@ -1,9 +1,13 @@
 #ifndef USER_FACTORY_HPP
 #define USER_FACTORY_HPP
 
-#include <string>
 
 #include "user.hpp"
+
+using namespace std;
+using bsoncxx::builder::basic::kvp;
+using bsoncxx::builder::basic::make_array;
+using bsoncxx::builder::basic::make_document;
 using namespace std;
 
 namespace UserFactory {

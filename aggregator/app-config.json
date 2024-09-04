@@ -1,5 +1,0 @@
-{
-  "AMQPConnectionUrl" : "amqp://guest:guest@localhost:5672/",
-  "aggregator": "aggregator",
-  "userQueue": "userQueue"
-}

@@ -1,5 +1,6 @@
 #ifndef USER_SERVICE_HPP
 #define USER_SERVICE_HPP
+
 #include "user-factory.hpp"
 #include "user-repository.hpp"
 #include "user.hpp"
@@ -15,6 +16,10 @@ namespace UserService {
 
     vector<User> inline getUserList() {
         return UserRepository::getUserList();
+    }
+
+    User inline getUserById(const bsoncxx::oid& id) {
+        return UserRepository::getUserById(id);
     }
 }
 

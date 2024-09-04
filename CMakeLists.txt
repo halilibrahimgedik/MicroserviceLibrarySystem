@@ -8,5 +8,5 @@ set(CMAKE_TOOLCHAIN_FILE "/home/halil/.vcpkg-clion/vcpkg/scripts/buildsystems/vc
 # Alt projeler
 add_subdirectory(api-gateway)
 add_subdirectory(aggregator)
-add_subdirectory(microservices/user-microservice)
+add_subdirectory(microservices/user-management)
 

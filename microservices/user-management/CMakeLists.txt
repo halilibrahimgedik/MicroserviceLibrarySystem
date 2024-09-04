@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.29)
-project(UserMicroService)
+project(user-management)
 
 set(CMAKE_CXX_STANDARD 20)
 
@@ -11,16 +11,17 @@ find_package(mongocxx CONFIG REQUIRED)
 find_package(bsoncxx CONFIG REQUIRED)
 
 
-add_executable(UserMicroService main.cpp
+add_executable(user-management main.cpp
         domain/user.hpp
         domain/user-repository.hpp
         domain/user-factory.hpp
         domain/user-service.hpp
         infrastructure/db-connection.hpp
         application/user-application-service.hpp
+        message-listener.hpp
 )
 
-target_link_libraries(UserMicroService PRIVATE
+target_link_libraries(user-management PRIVATE
         amqpcpp
         Boost::system
         OpenSSL::SSL

@@ -7,11 +7,8 @@
 namespace QueueMap {
     using namespace std;
 
-    const string userQueue{"userQueue"};
-    const string gatewayQueue{"gatewayQueue"};
-
     inline unordered_map<string, string> actionQueueMap {
-        {"result", gatewayQueue},
+        {"result", "gateway"},
         {"user.getList", "user.getList"},
         {"user.insert", "user.insert"},
         {"user.update", "user.update"},

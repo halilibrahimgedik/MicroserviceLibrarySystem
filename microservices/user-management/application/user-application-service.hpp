@@ -13,6 +13,10 @@ namespace UserApplicationService {
         return UserService::getUserList();
     }
 
+    User inline getUserById(const bsoncxx::oid& id) {
+        return UserService::getUserById(id);
+    }
+
 }
 
 #endif //USER_APPLICATION_SERVICE_HPP
