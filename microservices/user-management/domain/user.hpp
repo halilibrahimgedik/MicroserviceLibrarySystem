@@ -3,12 +3,9 @@
 
 #include <string>
 #include <mongocxx/client.hpp>
-#include <utility>
 #include <nlohmann/json.hpp>
 
-
 using namespace std;
-using json = nlohmann::json;
 
 class User {
 public:

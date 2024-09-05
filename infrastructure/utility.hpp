@@ -6,6 +6,9 @@
 #include <iostream>
 #include <iomanip>
 #include <sstream>
+#include <nlohmann/json.hpp>
+
+using namespace std;
 
 namespace Utility {
 
@@ -32,6 +35,36 @@ namespace Utility {
             oss << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(data[i]);
         }
         return oss.str();
+    }
+
+    nlohmann::json inline getMessage(const string_view::iterator& data, const size_t& size) {
+        const std::string message(data, size);
+        return nlohmann::json::parse(message);
+    }
+
+    chrono::system_clock::time_point inline parseDate(const std::string& dateStr) {
+        std::tm tm = {};
+        std::istringstream ss(dateStr);
+
+        ss >> std::get_time(&tm, "%d.%m.%Y");
+        if (ss.fail()) {
+            throw std::invalid_argument("Unsupported date format");
+        }
+
+        const std::time_t time = std::mktime(&tm);
+        if (time == -1) {
+            throw std::runtime_error("Failed to convert time");
+        }
+
+        return std::chrono::system_clock::from_time_t(time);
+    }
+
+    string inline formatDate(const chrono::system_clock::time_point& timePoint) {
+        const auto timeT = chrono::system_clock::to_time_t(timePoint);
+        const std::tm tm = *std::localtime(&timeT);
+        char buffer[11];
+        strftime(buffer, sizeof(buffer), "%d.%m.%Y", &tm);
+        return string{buffer};
     }
 }
 

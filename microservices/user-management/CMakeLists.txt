@@ -9,6 +9,7 @@ find_package(OpenSSL REQUIRED)
 
 find_package(mongocxx CONFIG REQUIRED)
 find_package(bsoncxx CONFIG REQUIRED)
+find_package(nlohmann_json  REQUIRED)
 
 
 add_executable(user-management main.cpp
@@ -23,6 +24,7 @@ add_executable(user-management main.cpp
 
 target_link_libraries(user-management PRIVATE
         amqpcpp
+        nlohmann_json::nlohmann_json
         Boost::system
         OpenSSL::SSL
         OpenSSL::Crypto

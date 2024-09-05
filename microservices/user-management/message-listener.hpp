@@ -3,11 +3,11 @@
 
 
 #include <string>
-#include <mongocxx/client.hpp>
-
 #include "../../infrastructure/rabbit-mq-adapter.hpp"
 #include "application/user-application-service.hpp"
 #include <nlohmann/json.hpp>
+
+#include "../../infrastructure/utility.hpp"
 
 using namespace std;
 using json = nlohmann::json;
@@ -16,18 +16,13 @@ namespace MessageListener {
     const string aggregatorQueue{"aggregator"};
     const string url{"amqp://guest:guest@localhost:5672/"};
 
-    json inline getMessage(const string_view::iterator& data, const size_t& size) {
-        const std::string message(data, size);
-        return json::parse(message);
-    }
-
     void inline start() {
         auto& adapter = RabbitMQAdapter::getInstance();
         adapter.init(url);
 
         adapter.consume("user.insert",
             [&adapter](const std::string_view& body, const uint64_t deliveryTag,bool redelivered) {
-                const json jsonData = getMessage(body.data(),body.size());
+                const json jsonData = Utility::getMessage(body.data(),body.size());
 
                 const User user{jsonData["fullname"].get<string>(), jsonData["email"].get<string>()};
                 auto newUser = UserApplicationService::createUser(user);
@@ -46,7 +41,7 @@ namespace MessageListener {
 
         adapter.consume("user.getList",
             [&adapter](const std::string_view& body, const uint64_t deliveryTag, bool redelivered) {
-                const json jsonData = getMessage(body.data(),body.size());
+                const json jsonData = Utility::getMessage(body.data(),body.size());
 
                 const auto users = UserApplicationService::getUserList();
                 json responseJson;
@@ -68,7 +63,7 @@ namespace MessageListener {
 
         adapter.consume("user.getById",
             [&adapter](const std::string_view& body, const uint64_t deliveryTag, bool redelivered) {
-                const json jsonData = getMessage(body.data(),body.size());
+                const json jsonData = Utility::getMessage(body.data(),body.size());
 
                 if(jsonData.contains("id")) {
                     const User user =UserApplicationService::getUserById(static_cast<bsoncxx::oid>(jsonData["id"].get<string>()));
@@ -84,7 +79,7 @@ namespace MessageListener {
 
         adapter.consume("user.delete",
             [&adapter](const std::string_view& body, const uint64_t deliveryTag, bool redelivered) {
-                const json jsonData = getMessage(body.data(),body.size());
+                const json jsonData = Utility::getMessage(body.data(),body.size());
 
                 if(!jsonData["id"].get<string>().empty()) {
                     const auto userId = static_cast<bsoncxx::oid>(jsonData["id"].get<string>());
@@ -103,7 +98,7 @@ namespace MessageListener {
 
         adapter.consume("user.update",
             [&adapter](const std::string_view& body, const uint64_t deliveryTag, bool redelivered) {
-                auto jsonData = getMessage(body.data(),body.size());
+                auto jsonData = Utility::getMessage(body.data(),body.size());
 
                 const auto userId = static_cast<bsoncxx::oid>(jsonData["id"].get<string>());
 
