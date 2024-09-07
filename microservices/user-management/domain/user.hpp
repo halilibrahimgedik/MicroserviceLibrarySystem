@@ -6,7 +6,6 @@
 #include <nlohmann/json.hpp>
 
 using namespace std;
-
 class User {
 public:
     User() = default;
@@ -17,8 +16,22 @@ public:
     string fullname;
     string email;
 
+    friend void to_json(nlohmann::json& json, const User& user){
+        json = nlohmann::json{
+            {"id", user.id.to_string()},
+            {"fullname", user.fullname},
+            {"email", user.email},
+        };
+    }
+
+    friend void from_json(const nlohmann::json& json, User& user) {
+        user.id = static_cast<bsoncxx::oid>(json["id"].get<string>());
+        user.fullname = json["fullname"].get<string>();
+        user.email = json["email"].get<string>();
+    }
+
     // basic türler için macro çalışıyor, bsoncxx::oid kabul etmiyor
-     NLOHMANN_DEFINE_TYPE_INTRUSIVE(User, fullname, email)
+     // NLOHMANN_DEFINE_TYPE_INTRUSIVE(User, fullname, email)
 };
 
 #endif //USER_HPP

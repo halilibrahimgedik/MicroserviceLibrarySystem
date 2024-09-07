@@ -24,6 +24,10 @@ namespace BookApplicationService {
     void inline updateBook(const Book& book) {
         BookService::updateBook(book);
     }
+
+    bool inline addUserToBook(const bsoncxx::oid id, const UserInfo& userInfo) {
+        return BookService::addUserToBook(id, userInfo);
+    }
 }
 
 

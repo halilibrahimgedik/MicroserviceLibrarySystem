@@ -10,6 +10,7 @@ find_package(OpenSSL REQUIRED)
 add_executable(aggregator main.cpp
         queue-map.hpp
         aggregator-listener.hpp
+        action-info.hpp
 )
 
 target_link_libraries(aggregator PRIVATE

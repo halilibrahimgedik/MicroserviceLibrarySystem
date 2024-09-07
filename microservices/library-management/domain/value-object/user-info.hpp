@@ -36,11 +36,11 @@ public:
     }
 
     friend void from_json(const json& json, UserInfo& u) {
-        u.id = bsoncxx::oid(json.at("id").get<string>());
+        u.id = static_cast<bsoncxx::oid>(json.at("id").get<string>());
         u.fullname = json.at("fullname").get<string>();
         u.email = json.at("email").get<string>();
-        u.rentedDate = Utility::parseDate(json.at("rentedDate").get<string>());
-        u.dueDate = Utility::parseDate(json.at("dueDate").get<string>());
+        // u.rentedDate = Utility::parseDate(json.at("rentedDate").get<string>());
+        // u.dueDate = Utility::parseDate(json.at("dueDate").get<string>());
     }
 };
 

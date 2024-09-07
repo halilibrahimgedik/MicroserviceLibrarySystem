@@ -25,6 +25,7 @@ namespace HttpListener {
 
             if (!message.empty()) {
                 json jsonMessage = json::parse(message);
+                std::cerr << jsonMessage.dump(4);
 
                 eventHub.emit("messageConsumed", jsonMessage["requestId"].get<string>(),
                                 jsonMessage["data"].dump());

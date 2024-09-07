@@ -84,6 +84,50 @@ namespace BookRepository {
 
         collection.update_one(filter.view(), updateFilter.view());
     }
+
+    bool inline any(const Book& book) {
+        const auto& instance = DBConnection::getInstance();
+        auto collection = instance.getCollection();
+
+        bsoncxx::builder::basic::document filter{};
+        filter.append(
+            kvp("name", book.name),
+            kvp("author", book.author)
+        );
+
+        const auto result = collection.find_one(filter.view());
+
+        return result.has_value();
+    }
+
+    bool inline addUserToBook(const bsoncxx::oid bookId, const UserInfo& userInfo) {
+        const auto& instance = DBConnection::getInstance();
+        auto collection = instance.getCollection();
+
+        bsoncxx::builder::basic::document filter{};
+        filter.append(kvp("_id", bookId));
+
+        bsoncxx::builder::basic::document userInfoDocument{};
+        userInfoDocument.append(kvp("id", userInfo.id),
+            kvp("fullname", userInfo.fullname),
+            kvp("email", userInfo.email));
+        // kvp("rentedDate", userInfo.rentedDate)
+        // kvp("dueDate", userInfo.dueDate)
+
+        const auto updateDocument = make_document(
+            kvp("$push", make_document(
+                kvp("users", userInfoDocument)
+            ))
+        );
+
+        auto result = collection.update_one(filter.view(), updateDocument.view());
+
+        if (result && result->modified_count() > 0) {
+            return true;
+        }
+
+        return false;
+    }
 }
 
 

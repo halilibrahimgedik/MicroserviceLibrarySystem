@@ -10,7 +10,7 @@ using json = nlohmann::json;
 using namespace std;
 
 namespace MessageListener {
-    const string aggregatorQueue{"aggregator"};
+    const string aggregatorResponseQueue{"aggregator_response"};
     const string url{"amqp://guest:guest@localhost:5672/"};
 
     void inline start() {
@@ -21,14 +21,8 @@ namespace MessageListener {
             const json jsonData = Utility::getMessage(body.data(), body.size());
 
             vector<UserInfo> users;
-
             for (const auto& userJson : jsonData["users"]) {
-               UserInfo userInfo;
-                userInfo.id = static_cast<bsoncxx::oid>(userJson["id"].get<string>());
-               userInfo.fullname = userJson["fullname"].get<string>();
-               userInfo.email = userJson["email"].get<string>();
-               userInfo.rentedDate = Utility::parseDate(userJson["rentedDate"].get<string>());
-               userInfo.dueDate = Utility::parseDate(userJson["dueDate"].get<string>());
+               UserInfo userInfo = userJson;
                users.push_back(move(userInfo));
             }
 
@@ -36,11 +30,11 @@ namespace MessageListener {
             const auto result = BookApplicationService::createBook(book);
 
             json resultJson;
-            resultJson["action"] = "result";
+            resultJson["next"] = "false";
             resultJson["requestId"] = jsonData["requestId"].get<string>();
             resultJson["data"] = result;
 
-            adapter.sendMessage(aggregatorQueue, resultJson.dump());
+            adapter.sendMessage(aggregatorResponseQueue, resultJson.dump());
             adapter.ack(deliveryTag);
         });
 
@@ -54,7 +48,7 @@ namespace MessageListener {
             resultJson["requestId"] = jsonData["requestId"].get<string>();
             resultJson["data"] = bookList;
 
-            adapter.sendMessage(aggregatorQueue, resultJson.dump());
+            adapter.sendMessage(aggregatorResponseQueue, resultJson.dump());
             adapter.ack(deliveryTag);
         });
 
@@ -69,7 +63,7 @@ namespace MessageListener {
                 resultJson["requestId"] = jsonData["requestId"].get<string>();
                 resultJson["data"] = book;
 
-                adapter.sendMessage(aggregatorQueue, resultJson.dump());
+                adapter.sendMessage(aggregatorResponseQueue, resultJson.dump());
                 adapter.ack(deliveryTag);
             } else {
 
@@ -87,7 +81,7 @@ namespace MessageListener {
                 resultJson["requestId"] = jsonData["requestId"].get<string>();
                 resultJson["data"] = "book (" + jsonData["id"].get<string>() + ") successfully deleted";
 
-                adapter.sendMessage(aggregatorQueue, resultJson.dump());
+                adapter.sendMessage(aggregatorResponseQueue, resultJson.dump());
                 adapter.ack(deliveryTag);
             } else {
                 // id alanı yoksa
@@ -117,7 +111,21 @@ namespace MessageListener {
             resultJson["requestId"] = jsonData["requestId"].get<string>();
             resultJson["data"] = "book (" + jsonData["id"].get<string>() + ") successfully updated";
 
-            adapter.sendMessage(aggregatorQueue, resultJson.dump());
+            adapter.sendMessage(aggregatorResponseQueue, resultJson.dump());
+            adapter.ack(deliveryTag);
+        });
+
+        adapter.consume("book.addAnUserToBook",[&adapter](const std::string_view &body, const uint64_t deliveryTag, const bool redelivered) {
+            const json jsonData = Utility::getMessage(body.data(), body.size());
+
+            const UserInfo userInfo = jsonData["data"];
+            BookApplicationService::addUserToBook(static_cast<bsoncxx::oid>(jsonData["bookId"].get<string>()), userInfo);
+
+            json jsonResponse;
+            jsonResponse["next"] = "false";
+            jsonResponse["data"] = "user added to book";
+
+            adapter.sendMessage(aggregatorResponseQueue, jsonResponse.dump());
             adapter.ack(deliveryTag);
         });
 

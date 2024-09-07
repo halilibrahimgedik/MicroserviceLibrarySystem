@@ -14,6 +14,10 @@ namespace BookService {
     }
 
     Book inline createBook(const Book& book) {
+        if(BookRepository::any(book)) {
+           throw runtime_error("Book already exists");
+        }
+
         const auto document = BookFactory::generateBook(book);
         return BookRepository::createBook(document);
     }
@@ -25,6 +29,11 @@ namespace BookService {
     void inline updateBook(const Book& book) {
         BookRepository::updateBook(book);
     }
+
+    bool inline addUserToBook(const bsoncxx::oid id, const UserInfo& userInfo) {
+        return BookRepository::addUserToBook(id, userInfo);
+    }
+
 
 }
 
