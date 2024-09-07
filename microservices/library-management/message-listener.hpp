@@ -118,8 +118,6 @@ namespace MessageListener {
         adapter.consume("book.addAnUserToBook",[&adapter](const std::string_view &body, const uint64_t deliveryTag, const bool redelivered) {
             json jsonData = Utility::getMessage(body.data(), body.size());
 
-            // jsonData["data"]["rentedDate"] = Utility::formatDate(chrono::system_clock::now());
-            // jsonData["data"]["dueDate"] = Utility::formatDate(chrono::system_clock::now());
             UserInfo userInfo = jsonData["data"];
             userInfo.rentedDate = chrono::system_clock::now();
             userInfo.dueDate = chrono::system_clock::now();
