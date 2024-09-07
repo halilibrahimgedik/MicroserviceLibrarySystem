@@ -110,9 +110,9 @@ namespace BookRepository {
         bsoncxx::builder::basic::document userInfoDocument{};
         userInfoDocument.append(kvp("id", userInfo.id),
             kvp("fullname", userInfo.fullname),
-            kvp("email", userInfo.email));
-        // kvp("rentedDate", userInfo.rentedDate)
-        // kvp("dueDate", userInfo.dueDate)
+            kvp("email", userInfo.email),
+            kvp("rentedDate", bsoncxx::types::b_date{userInfo.rentedDate}),
+            kvp("dueDate", bsoncxx::types::b_date{userInfo.dueDate}));
 
         const auto updateDocument = make_document(
             kvp("$push", make_document(

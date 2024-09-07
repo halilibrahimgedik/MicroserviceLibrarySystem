@@ -116,9 +116,14 @@ namespace MessageListener {
         });
 
         adapter.consume("book.addAnUserToBook",[&adapter](const std::string_view &body, const uint64_t deliveryTag, const bool redelivered) {
-            const json jsonData = Utility::getMessage(body.data(), body.size());
+            json jsonData = Utility::getMessage(body.data(), body.size());
 
-            const UserInfo userInfo = jsonData["data"];
+            // jsonData["data"]["rentedDate"] = Utility::formatDate(chrono::system_clock::now());
+            // jsonData["data"]["dueDate"] = Utility::formatDate(chrono::system_clock::now());
+            UserInfo userInfo = jsonData["data"];
+            userInfo.rentedDate = chrono::system_clock::now();
+            userInfo.dueDate = chrono::system_clock::now();
+
             BookApplicationService::addUserToBook(static_cast<bsoncxx::oid>(jsonData["bookId"].get<string>()), userInfo);
 
             json jsonResponse;
