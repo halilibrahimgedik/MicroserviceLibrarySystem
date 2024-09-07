@@ -33,7 +33,6 @@ namespace AggregatorListener {
 
                 // belirtilen kuyruklara sırayla mesajı yollayalım
                 for (const auto & queueName : actionInfo.queues) {
-                    std::cerr << "aggregator'da " << jsonData.dump(2) << endl;
                     adapter.sendMessage(queueName, jsonData.dump());
                     gotResponse = false;
 

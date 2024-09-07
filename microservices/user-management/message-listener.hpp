@@ -70,9 +70,7 @@ namespace MessageListener {
                                                                         (jsonData["userId"].get<string>()));
                     json responseJson;
                     responseJson["next"] = "true";
-                    // responseJson["requestId"] = jsonData["requestId"];
                     responseJson["data"] = user;
-                    std::cerr << responseJson.dump(4);
                     adapter.sendMessage(aggregatorResponseQueue, responseJson.dump());
                     adapter.ack(deliveryTag);
                 }

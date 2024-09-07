@@ -25,8 +25,6 @@ namespace HttpListener {
 
             if (!message.empty()) {
                 json jsonMessage = json::parse(message);
-                std::cerr <<endl<< "consume'de:  " << jsonMessage.dump(4) << endl;
-                std::cerr << "consume'de requestId :   " << jsonMessage["requestId"].get<string>() << endl;
 
                 eventHub.emit("messageConsumed", jsonMessage["requestId"].get<string>(),
                                 jsonMessage["data"].dump());
@@ -48,7 +46,6 @@ namespace HttpListener {
                 }
         });
 
-        std::cerr << "resultJson: " << resultJson.dump();
         while (resultJson.empty()) {
             std::this_thread::sleep_for(std::chrono::milliseconds(5));
         }

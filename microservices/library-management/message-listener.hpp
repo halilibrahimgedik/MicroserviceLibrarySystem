@@ -118,8 +118,6 @@ namespace MessageListener {
         adapter.consume("book.addAnUserToBook",[&adapter](const std::string_view &body, const uint64_t deliveryTag, const bool redelivered) {
             const json jsonData = Utility::getMessage(body.data(), body.size());
 
-            std::cerr << jsonData.dump(2) << endl;
-            std::cerr << jsonData["data"].dump(2)  << endl;
             const UserInfo userInfo = jsonData["data"];
             BookApplicationService::addUserToBook(static_cast<bsoncxx::oid>(jsonData["bookId"].get<string>()), userInfo);
 
