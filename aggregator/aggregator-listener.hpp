@@ -26,14 +26,16 @@ namespace AggregatorListener {
                 const auto& actionInfo = iterator->second;
                 adapter.ack(deliveryTag);
 
+                if (jsonData.empty()) {
+                    jsonData = jsonRequestData;
+                }
+                jsonData["requestId"] = jsonRequestData["requestId"].get<string>();
+
                 // belirtilen kuyruklara sırayla mesajı yollayalım
                 for (const auto & queueName : actionInfo.queues) {
-                    if(queueName == actionInfo.queues.front()) {
-                        adapter.sendMessage(queueName, jsonRequestData.dump());
-                        jsonData = jsonRequestData;
-                    }else {
-                        adapter.sendMessage(queueName, jsonData.dump());
-                    }
+                    std::cerr << "aggregator'da " << jsonData.dump(2) << endl;
+                    adapter.sendMessage(queueName, jsonData.dump());
+                    gotResponse = false;
 
                     while (!gotResponse) {
                         this_thread::sleep_for(chrono::milliseconds(5));
@@ -46,7 +48,7 @@ namespace AggregatorListener {
 
         adapter.consume("aggregator_response", [&adapter, &gotResponse, &jsonData](const std::string_view& body, const uint64_t deliveryTag, bool redelivered) {
             json jsonResponseData = Utility::getMessage(body.data(), body.size());
-            const string nextString = jsonResponseData["next"].get<std::string>();
+            const string nextString = jsonResponseData["next"].get<string>();
             const bool next = (nextString == "true");
 
             jsonData["data"] = jsonResponseData["data"];
