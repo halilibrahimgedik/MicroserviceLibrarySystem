@@ -51,7 +51,10 @@ namespace UserRepository {
         bsoncxx::builder::basic::document filter{};
         filter.append(kvp("_id", id));
 
-        collection.delete_one(filter.view());
+        bsoncxx::builder::basic::document update{};
+        update.append(kvp("$set", make_document(kvp("isActive", false))));
+
+        collection.update_one(filter.view(), update.view());
     }
 
     void inline updateUser(User& user) {
@@ -64,7 +67,8 @@ namespace UserRepository {
         bsoncxx::builder::basic::document updateFilter{};
         updateFilter.append(kvp("$set", make_document(
             kvp("fullname", user.fullname),
-            kvp("email", user.email)))
+            kvp("email", user.email),
+            kvp("isActive", user.isActive)))
         );
 
         collection.update_one(filter.view(), updateFilter.view());

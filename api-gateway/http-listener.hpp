@@ -27,7 +27,7 @@ namespace HttpListener {
                 json jsonMessage = json::parse(message);
 
                 eventHub.emit("messageConsumed", jsonMessage["requestId"].get<string>(),
-                                jsonMessage["data"].dump());
+                                jsonMessage["responseMessage"].dump());
 
                 adapter.ack(deliveryTag);
             }
@@ -46,7 +46,6 @@ namespace HttpListener {
                 }
         });
 
-        std::cerr << resultJson;
         while (resultJson.empty()) {
             std::this_thread::sleep_for(std::chrono::milliseconds(5));
         }

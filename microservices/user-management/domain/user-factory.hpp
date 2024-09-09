@@ -8,7 +8,6 @@ using namespace std;
 using bsoncxx::builder::basic::kvp;
 using bsoncxx::builder::basic::make_array;
 using bsoncxx::builder::basic::make_document;
-using namespace std;
 
 namespace UserFactory {
 
@@ -16,7 +15,8 @@ namespace UserFactory {
         bsoncxx::builder::basic::document filter{};
         filter.append(
             kvp("fullname", user.fullname),
-            kvp("email", user.email));
+            kvp("email", user.email),
+            kvp("isActive", user.isActive));
 
         return filter;
     }
@@ -26,6 +26,7 @@ namespace UserFactory {
         user.id = docValue["_id"].get_oid().value;
         user.fullname = docValue["fullname"].get_string().value;
         user.email = docValue["email"].get_string().value;
+        user.isActive = docValue["isActive"].get_bool().value;
 
         return user;
     }
@@ -38,6 +39,7 @@ namespace UserFactory {
             user.id = doc["_id"].get_oid().value;
             user.fullname = doc["fullname"].get_string().value;
             user.email = doc["email"].get_string().value;
+            user.isActive = doc["isActive"].get_bool().value;
             users.push_back(std::move(user));
         }
 
