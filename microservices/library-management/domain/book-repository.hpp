@@ -59,25 +59,11 @@ namespace BookRepository {
         bsoncxx::builder::basic::document filter{};
         filter.append(kvp("_id", book.id));
 
-        // we could have used lambda expression inside updateFilter make_document
-        bsoncxx::builder::basic::array usersArray;
-        for (const auto& user : book.users) {
-            usersArray.append(
-                make_document(
-                    kvp("fullname", user.fullname),
-                    kvp("email", user.email),
-                    kvp("rentedDate", bsoncxx::types::b_date{user.rentedDate}),
-                    kvp("dueDate", bsoncxx::types::b_date{user.dueDate})
-                )
-            );
-        }
-
         bsoncxx::builder::basic::document updateFilter{};
         updateFilter.append(kvp("$set",
            make_document(
                    kvp("name", book.name),
-                   kvp("author", book.author),
-                   kvp("users", usersArray)
+                   kvp("author", book.author)
                )
            )
        );
@@ -100,33 +86,20 @@ namespace BookRepository {
         return result.has_value();
     }
 
-    bool inline addUserToBook(const bsoncxx::oid bookId, const UserInfo& userInfo) {
+    Book inline addUserToBook(const bsoncxx::oid bookId, const UserInfo& userInfo) {
         const auto& instance = DBConnection::getInstance();
         auto collection = instance.getCollection();
 
         bsoncxx::builder::basic::document filter{};
         filter.append(kvp("_id", bookId));
 
-        bsoncxx::builder::basic::document userInfoDocument{};
-        userInfoDocument.append(kvp("id", userInfo.id),
-            kvp("fullname", userInfo.fullname),
-            kvp("email", userInfo.email),
-            kvp("rentedDate", bsoncxx::types::b_date{userInfo.rentedDate}),
-            kvp("dueDate", bsoncxx::types::b_date{userInfo.dueDate}));
+        const auto optionalValue = collection.find_one(filter.view());
+        const Book book = BookFactory::generateBookById(optionalValue.value());
+        const auto updateDocument = BookFactory::generateUseInfo(userInfo);
 
-        const auto updateDocument = make_document(
-            kvp("$push", make_document(
-                kvp("users", userInfoDocument)
-            ))
-        );
+        collection.update_one(filter.view(), updateDocument.view());
 
-        auto result = collection.update_one(filter.view(), updateDocument.view());
-
-        if (result && result->modified_count() > 0) {
-            return true;
-        }
-
-        return false;
+        return book;
     }
 }
 

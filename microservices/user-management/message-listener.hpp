@@ -22,42 +22,36 @@ namespace MessageListener {
 
         adapter.consume("user.insert",
             [&adapter](const std::string_view& body, const uint64_t deliveryTag,bool redelivered) {
-                const json jsonData = Utility::getMessage(body.data(),body.size());
+                json jsonData = Utility::getMessage(body.data(),body.size());
 
                 const User user{jsonData["fullname"].get<string>(), jsonData["email"].get<string>()};
                 auto newUser = UserApplicationService::createUser(user);
 
-                json responseJson;
-                responseJson["next"] = "true";
-                responseJson["requestId"] = jsonData["requestId"];
+                jsonData["responseMessage"] = newUser;
+                jsonData["index"] = jsonData["index"].get<size_t>() + 1 ;
 
-                responseJson["data"] = newUser;
-                // we need to add this by manually.Because, the type of id is bsoncxx:oid and macro cant parse to json that
-                responseJson["data"]["id"] = newUser.id.to_string();
-
-                adapter.sendMessage(aggregator, responseJson.dump());
+                adapter.sendMessage(aggregator, jsonData.dump());
                 adapter.ack(deliveryTag);
         });
 
         adapter.consume("user.getList",
             [&adapter](const std::string_view& body, const uint64_t deliveryTag, bool redelivered) {
-                const json jsonData = Utility::getMessage(body.data(),body.size());
+                json jsonData = Utility::getMessage(body.data(),body.size());
 
                 const auto users = UserApplicationService::getUserList();
-                json responseJson;
-                responseJson["action"] = "result";
+
                 json jsonArray = json::array();
 
                 for (const auto &user: users) {
                     json userJson = user;
-                    userJson["id"] = user.id.to_string(); // we need to add this by manually
+                    // userJson["id"] = user.id.to_string(); // we need to add this by manually
                     jsonArray.push_back(userJson);
                 }
 
-                responseJson["data"] = jsonArray;
-                responseJson["requestId"] = jsonData["requestId"];
+                jsonData["responseMessage"] = jsonArray;
+                jsonData["index"] = jsonData["index"].get<size_t>() + 1 ;
 
-                adapter.sendMessage(aggregator, responseJson.dump());
+                adapter.sendMessage(aggregator, jsonData.dump());
                 adapter.ack(deliveryTag);
         });
 
@@ -67,7 +61,7 @@ namespace MessageListener {
                     const User user =UserApplicationService::getUserById(static_cast<bsoncxx::oid>
                                                                         (jsonData["userId"].get<string>()));
 
-                    jsonData["user"] = user;
+                    jsonData["responseMessage"] = user;
                     jsonData["index"] = jsonData["index"].get<size_t>() + 1;
 
                     adapter.sendMessage(aggregator, jsonData.dump());
@@ -77,19 +71,15 @@ namespace MessageListener {
 
         adapter.consume("user.delete",
             [&adapter](const std::string_view& body, const uint64_t deliveryTag, bool redelivered) {
-                const json jsonData = Utility::getMessage(body.data(),body.size());
-
-                if(!jsonData["id"].get<string>().empty()) {
+                if(json jsonData = Utility::getMessage(body.data(),body.size()); !jsonData["id"].get<string>().empty()) {
                     const auto userId = static_cast<bsoncxx::oid>(jsonData["id"].get<string>());
                     // We assume we have user with same id in our db
                     UserApplicationService::deleteUserById(userId);
 
-                    json responseJson;
-                    responseJson["action"] = "result";
-                    responseJson["requestId"] = jsonData["requestId"];
-                    responseJson["data"] = "user deleted successfully";
+                    jsonData["responseMessage"] = "user deleted successfully";
+                    jsonData["index"] = jsonData["index"].get<size_t>() + 1;
 
-                    adapter.sendMessage(aggregator, responseJson.dump());
+                    adapter.sendMessage(aggregator, jsonData.dump());
                     adapter.ack(deliveryTag);
                 }
         });
@@ -98,19 +88,16 @@ namespace MessageListener {
             [&adapter](const std::string_view& body, const uint64_t deliveryTag, bool redelivered) {
                 auto jsonData = Utility::getMessage(body.data(),body.size());
 
-                const auto userId = static_cast<bsoncxx::oid>(jsonData["id"].get<string>());
+                // const auto userId = static_cast<bsoncxx::oid>(jsonData["id"].get<string>());
 
                 auto user = jsonData.get<User>();
-                user.id = userId;
-
+                // user.id = userId;
                 UserApplicationService::updateUser(user);
 
-                json responseJson;
-                responseJson["action"] = "result";
-                responseJson["requestId"] = jsonData["requestId"];
-                responseJson["data"] = "user updated successfully";
+                jsonData["responseMessage"] = "user updated successfully";
+                jsonData["index"] = jsonData["index"].get<size_t>() + 1;
 
-                adapter.sendMessage(aggregator, responseJson.dump());
+                adapter.sendMessage(aggregator, jsonData.dump());
                 adapter.ack(deliveryTag);
         });
 

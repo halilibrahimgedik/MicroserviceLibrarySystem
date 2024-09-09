@@ -30,7 +30,7 @@ namespace BookService {
         BookRepository::updateBook(book);
     }
 
-    bool inline addUserToBook(const bsoncxx::oid id, const UserInfo& userInfo) {
+    Book inline addUserToBook(const bsoncxx::oid id, const UserInfo& userInfo) {
         return BookRepository::addUserToBook(id, userInfo);
     }
 

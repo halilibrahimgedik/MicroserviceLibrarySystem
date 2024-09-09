@@ -16,14 +16,12 @@ class Book {
 
 public:
     Book() = default;
-    Book(string name, string author, const vector<UserInfo>& users)
-        : id(id), name(move(name)), author(move(author)), users(users) {
-    };
-    Book(const bsoncxx::oid& id, string name, string author, const vector<UserInfo>& users)
-        : id(id), name(move(name)), author(move(author)), users(users) {
-    };
+    Book(string name, string author, const vector<UserInfo>& users = {})
+        : id(id), name(move(name)), author(move(author)), users(users) {};
+    Book(const bsoncxx::oid& id, string name, string author, const vector<UserInfo>& users = {})
+        : id(id), name(move(name)), author(move(author)), users(users){};
 
-    // Karşılaştırma operatörünü overload
+
     bool operator==(const Book& other) const {
         return (name == other.name) && (author == other.author);
     }
