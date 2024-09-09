@@ -13,7 +13,7 @@ using namespace std;
 using json = nlohmann::json;
 
 namespace MessageListener {
-    const string aggregatorResponseQueue{"aggregator_response"};
+    const string aggregator{"aggregator"};
     const string url{"amqp://guest:guest@localhost:5672/"};
 
     void inline start() {
@@ -35,7 +35,7 @@ namespace MessageListener {
                 // we need to add this by manually.Because, the type of id is bsoncxx:oid and macro cant parse to json that
                 responseJson["data"]["id"] = newUser.id.to_string();
 
-                adapter.sendMessage(aggregatorResponseQueue, responseJson.dump());
+                adapter.sendMessage(aggregator, responseJson.dump());
                 adapter.ack(deliveryTag);
         });
 
@@ -57,21 +57,20 @@ namespace MessageListener {
                 responseJson["data"] = jsonArray;
                 responseJson["requestId"] = jsonData["requestId"];
 
-                adapter.sendMessage(aggregatorResponseQueue, responseJson.dump());
+                adapter.sendMessage(aggregator, responseJson.dump());
                 adapter.ack(deliveryTag);
         });
 
         adapter.consume("user.getById",
             [&adapter](const std::string_view& body, const uint64_t deliveryTag, bool redelivered) {
-                const json jsonData = Utility::getMessage(body.data(),body.size());
-
-                if(jsonData.contains("userId")) {
+                if(json jsonData = Utility::getMessage(body.data(),body.size()); jsonData.contains("userId")) {
                     const User user =UserApplicationService::getUserById(static_cast<bsoncxx::oid>
                                                                         (jsonData["userId"].get<string>()));
-                    json responseJson;
-                    responseJson["next"] = "true";
-                    responseJson["data"] = user;
-                    adapter.sendMessage(aggregatorResponseQueue, responseJson.dump());
+
+                    jsonData["user"] = user;
+                    jsonData["index"] = jsonData["index"].get<size_t>() + 1;
+
+                    adapter.sendMessage(aggregator, jsonData.dump());
                     adapter.ack(deliveryTag);
                 }
         });
@@ -90,7 +89,7 @@ namespace MessageListener {
                     responseJson["requestId"] = jsonData["requestId"];
                     responseJson["data"] = "user deleted successfully";
 
-                    adapter.sendMessage(aggregatorResponseQueue, responseJson.dump());
+                    adapter.sendMessage(aggregator, responseJson.dump());
                     adapter.ack(deliveryTag);
                 }
         });
@@ -111,7 +110,7 @@ namespace MessageListener {
                 responseJson["requestId"] = jsonData["requestId"];
                 responseJson["data"] = "user updated successfully";
 
-                adapter.sendMessage(aggregatorResponseQueue, responseJson.dump());
+                adapter.sendMessage(aggregator, responseJson.dump());
                 adapter.ack(deliveryTag);
         });
 

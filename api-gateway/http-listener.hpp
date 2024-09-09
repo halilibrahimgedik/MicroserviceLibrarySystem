@@ -27,7 +27,7 @@ namespace HttpListener {
                 json jsonMessage = json::parse(message);
 
                 eventHub.emit("messageConsumed", jsonMessage["requestId"].get<string>(),
-                                jsonMessage["data"].dump());
+                                jsonMessage["responseMessage"].dump());
 
                 adapter.ack(deliveryTag);
             }
