@@ -24,21 +24,6 @@ namespace QueueMap {
         {"book.getById", ActionInfo{{"book.getById"}}},
         {"book.addUserToBook", ActionInfo{{"user.getById", "book.addAnUserToBook"}} },
     };
-
-
-    // inline unordered_map<string, string> actionQueueMap {
-    //     {"result", "gateway"},
-    //     {"user.getList", "user.getList"},
-    //     {"user.insert", "user.insert"},
-    //     {"user.update", "user.update"},
-    //     {"user.delete", "user.delete"},
-    //     {"user.getById", "user.getById"},
-    //     {"book.getList", "book.getList"},
-    //     {"book.insert", "book.insert"},
-    //     {"book.update", "book.update"},
-    //     {"book.delete", "book.delete"},
-    //     {"book.getById", "book.getById"},
-    // };
 }
 
 #endif //QUEUE_MAP_HPP
