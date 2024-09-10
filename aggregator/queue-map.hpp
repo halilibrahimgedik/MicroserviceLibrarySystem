@@ -13,8 +13,8 @@ namespace QueueMap {
     inline unordered_map<string, ActionInfo> actionQueueMap {
         {"user.getList", ActionInfo{{"user.getList"}}},
         {"user.insert", ActionInfo{{"user.insert"}}},
-        {"user.update", ActionInfo{ {"user.update"}}},
-        {"user.delete", ActionInfo{{"user.delete"}}},
+        {"user.update", ActionInfo{ {"user.update", "book.updateUserToBooks"}}},
+        {"user.delete", ActionInfo{{"user.delete", "book.deleteUserToBooks"}}},
         {"user.getById", ActionInfo{{"user.getById"}}},
 
         {"book.getList", ActionInfo{{"book.getList"}}},
@@ -22,7 +22,7 @@ namespace QueueMap {
         {"book.update", ActionInfo{{"book.update"}}},
         {"book.delete", ActionInfo{{"book.delete"}}},
         {"book.getById", ActionInfo{{"book.getById"}}},
-        {"book.addUserToBook", ActionInfo{{"user.getById", "book.addAnUserToBook"}} },
+        {"book.addUserToBook", ActionInfo{{"user.getById", "book.addUserToBook"}} },
     };
 }
 

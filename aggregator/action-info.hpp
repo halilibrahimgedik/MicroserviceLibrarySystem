@@ -9,6 +9,9 @@ public:
     ActionInfo(const std::vector<std::string>& queues) : queues(queues) {};
 
     std::vector<std::string> queues;
+
+    // std::optional<std::string> responseMessage;
+    // int statusCode;
 };
 
 #endif //ACTION_INFO_HPP

@@ -15,7 +15,7 @@ namespace BookFactory {
         for (const auto& user : book.users) {
             bsoncxx::builder::basic::document userDoc;
             userDoc.append(
-                kvp("_id", user.id),
+                kvp("_id", user.userId),
                 kvp("fullname", user.fullname),
                 kvp("email", user.email),
                 kvp("rentedDate", bsoncxx::types::b_date{user.rentedDate}),
@@ -37,16 +37,15 @@ namespace BookFactory {
 
     Book inline generateBookById(const bsoncxx::document::value& docValue) {
         Book book;
-        const auto docView = docValue.view();
 
-        book.id = docView["_id"].get_oid().value;
-        book.name = docView["name"].get_string().value;
-        book.author = docView["author"].get_string().value;
+        book.id = docValue["_id"].get_oid().value;
+        book.name = docValue["name"].get_string().value;
+        book.author = docValue["author"].get_string().value;
 
-        if( docView["users"] && !docView["users"].get_array().value.empty()) {
-            for (const auto& userData : docView["users"].get_array().value) {
+        if( docValue["users"] && !docValue["users"].get_array().value.empty()) {
+            for (const auto& userData : docValue["users"].get_array().value) {
                 UserInfo userInfo;
-                userInfo.id = userData["_id"].get_oid().value;
+                userInfo.userId = userData["_id"].get_oid().value;
                 userInfo.fullname = userData["fullname"].get_string().value;
                 userInfo.email = userData["email"].get_string().value;
                 userInfo.rentedDate = std::chrono::system_clock::time_point{std::chrono::milliseconds{userData["rentedDate"].get_date().value}};
@@ -70,7 +69,7 @@ namespace BookFactory {
 
             for (const auto& userDoc : document["users"].get_array().value) {
                 UserInfo userInfo;
-                userInfo.id = userDoc["_id"].get_oid().value;
+                userInfo.userId = userDoc["_id"].get_oid().value;
                 userInfo.fullname = userDoc["fullname"].get_string().value;
                 userInfo.email = userDoc["email"].get_string().value;
                 userInfo.rentedDate = chrono::system_clock::time_point{std::chrono::milliseconds{userDoc["rentedDate"].get_date().value}};
@@ -87,7 +86,7 @@ namespace BookFactory {
 
     bsoncxx::document::value inline generateUseInfo(const UserInfo& userInfo) {
         bsoncxx::builder::basic::document userInfoDocument{};
-        userInfoDocument.append(kvp("_id", userInfo.id),
+        userInfoDocument.append(kvp("_id", userInfo.userId),
             kvp("fullname", userInfo.fullname),
             kvp("email", userInfo.email),
             kvp("rentedDate", bsoncxx::types::b_date{userInfo.rentedDate}),

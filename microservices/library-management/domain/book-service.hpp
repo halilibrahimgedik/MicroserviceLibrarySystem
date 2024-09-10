@@ -34,6 +34,13 @@ namespace BookService {
         return BookRepository::addUserToBook(id, userInfo);
     }
 
+    void inline deleteUserToBooks(const bsoncxx::oid& userId) {
+        BookRepository::deleteUserToBooks(userId);
+    }
+
+    void inline updateUserToBooks(const bsoncxx::oid& userId, const UserInfo& userInfo) {
+        BookRepository::updateUserToBooks(userId, userInfo);
+    }
 
 }
 

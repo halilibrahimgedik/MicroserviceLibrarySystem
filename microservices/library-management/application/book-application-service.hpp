@@ -28,6 +28,14 @@ namespace BookApplicationService {
     Book inline addUserToBook(const bsoncxx::oid id, const UserInfo& userInfo) {
         return BookService::addUserToBook(id, userInfo);
     }
+
+    void inline deleteUserToBook(const bsoncxx::oid& userId) {
+        BookService::deleteUserToBooks(userId);
+    }
+
+    void inline updateUserToBooks(const bsoncxx::oid& userId, const UserInfo& userInfo) {
+        BookService::updateUserToBooks(userId, userInfo);
+    }
 }
 
 

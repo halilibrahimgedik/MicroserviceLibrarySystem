@@ -79,7 +79,7 @@ namespace MessageListener {
             adapter.ack(deliveryTag);
         });
 
-        adapter.consume("book.addAnUserToBook",[&adapter](const std::string_view &body, const uint64_t deliveryTag, const bool redelivered) {
+        adapter.consume("book.addUserToBook",[&adapter](const std::string_view &body, const uint64_t deliveryTag, const bool redelivered) {
             json jsonData = Utility::getMessage(body.data(), body.size());
 
             UserInfo userInfo = jsonData["responseMessage"];
@@ -90,6 +90,31 @@ namespace MessageListener {
                                                                     (jsonData["bookId"].get<string>()), userInfo);
 
             jsonData["responseMessage"] = result;
+            jsonData["index"] = jsonData["index"].get<size_t>() + 1;
+
+            adapter.sendMessage(aggregator, jsonData.dump());
+            adapter.ack(deliveryTag);
+        });
+
+        adapter.consume("book.deleteUserToBooks",[&adapter](const std::string_view &body, const uint64_t deliveryTag, const bool redelivered) {
+            json jsonData = Utility::getMessage(body.data(), body.size());
+
+            BookApplicationService::deleteUserToBook(static_cast<bsoncxx::oid>(jsonData["userId"].get<string>()));
+
+            jsonData["responseMessage"] = "user successfully deleted from books";
+            jsonData["index"] = jsonData["index"].get<size_t>() + 1;
+
+            adapter.sendMessage(aggregator, jsonData.dump());
+            adapter.ack(deliveryTag);
+        });
+
+        adapter.consume("book.updateUserToBooks",[&adapter](const std::string_view &body, const uint64_t deliveryTag, const bool redelivered) {
+            json jsonData = Utility::getMessage(body.data(), body.size());
+            const auto userInfo = jsonData.get<UserInfo>();
+
+            BookApplicationService::updateUserToBooks(static_cast<bsoncxx::oid>(jsonData["userId"].get<string>()), userInfo);
+
+            jsonData["responseMessage"] = "user successfully updated from books";
             jsonData["index"] = jsonData["index"].get<size_t>() + 1;
 
             adapter.sendMessage(aggregator, jsonData.dump());

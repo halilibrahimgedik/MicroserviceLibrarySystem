@@ -94,13 +94,45 @@ namespace BookRepository {
         filter.append(kvp("_id", bookId));
 
         const auto optionalValue = collection.find_one(filter.view());
-        const Book book = BookFactory::generateBookById(optionalValue.value());
+        const auto book = BookFactory::generateBookById(optionalValue.value());
         const auto updateDocument = BookFactory::generateUseInfo(userInfo);
 
         collection.update_one(filter.view(), updateDocument.view());
 
-        return book;
+        return getBookById(book.id);;
     }
+
+    void inline deleteUserToBooks(const bsoncxx::oid& userId) {
+        const auto& dbConnection = DBConnection::getInstance();
+        auto collection = dbConnection.getCollection();
+
+        bsoncxx::builder::basic::document filter{};
+        bsoncxx::builder::basic::document update{};
+
+        filter.append(kvp("users._id", userId));
+        update.append(kvp("$pull", make_document(
+            kvp("users", make_document(kvp("_id", userId)))
+        )));
+
+        collection.update_many(filter.view(), update.view());
+    }
+
+    void inline updateUserToBooks(const bsoncxx::oid& userId, const UserInfo& userInfo) {
+        const auto& dbConnection = DBConnection::getInstance();
+        auto collection = dbConnection.getCollection();
+
+        bsoncxx::builder::basic::document filter{};
+        filter.append(kvp("users._id", userId));
+
+        bsoncxx::builder::basic::document update{};
+        update.append(kvp("$set", make_document(
+            kvp("users.$.fullname", userInfo.fullname),
+            kvp("users.$.email", userInfo.email)
+        )));
+
+        collection.update_many(filter.view(), update.view());
+    }
+
 }
 
 

@@ -19,6 +19,8 @@ namespace AggregatorListener {
             json jsonData = Utility::getMessage(body.data(),body.size());
             const auto action = jsonData["action"].get<std::string>();
 
+            std::cerr << jsonData.dump(4) << std::endl;
+
             // action değerini map'de arayalım
             if (const auto iterator{QueueMap::actionQueueMap.find(action)}; iterator != QueueMap::actionQueueMap.end()) {
                 const auto& actionInfo = iterator->second;
