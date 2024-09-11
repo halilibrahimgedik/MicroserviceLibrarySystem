@@ -1,28 +1,39 @@
 #ifndef USER_APPLICATION_SERVICE_HPP
 #define USER_APPLICATION_SERVICE_HPP
+
 #include "../domain/user-service.hpp"
-#include "../domain/user.hpp"
+#include "../dtos/request/user/update-user-request.hpp"
 
 namespace UserApplicationService {
 
-    CreateUserResponseDto inline createUser(const CreateUserRequestDto& dto) {
-        return UserService::createUser(dto);
+    CreateUserResponse inline createUser(const CreateUserRequest& createUser) {
+        return UserService::createUser(createUser.fullname, createUser.email);
     }
 
-    vector<ResultUserResponseDto> inline getUserList() {
-        return UserService::getUserList();
+    vector<UserResponse> inline getUserList() {
+        const auto users = UserService::getUserList();
+
+        vector<UserResponse> userList;
+        for(const auto& user : users) {
+            UserResponse userResponse {user.userId.to_string(), user.fullname, user.email, user.isActive};
+            userList.push_back(move(userResponse));
+        }
+
+        return userList;
     }
 
-    ResultUserByIdResponseDto inline getUserById(const bsoncxx::oid& id) {
-        return UserService::getUserById(id);
+    UserByIdResponse inline getUserById(const bsoncxx::oid& id) {
+        const auto user = UserService::getUserById(id);
+        return { user.userId.to_string(), user.fullname, user.email, user.isActive};
+
     }
 
     void inline deleteUserById(const bsoncxx::oid& id) {
         UserService::deleteUserById(id);
     }
 
-    void inline updateUser(const UpdateUserRequestDto& dto) {
-        UserService::updateUser(dto);
+    void inline updateUser(const UpdateUserRequest& dto) {
+        UserService::updateUser(static_cast<bsoncxx::oid>(dto.userId), dto.fullname, dto.email, dto.isActive);
     }
 
 }

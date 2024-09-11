@@ -10,25 +10,12 @@ using bsoncxx::builder::basic::make_document;
 
 namespace BookFactory {
 
-    bsoncxx::builder::basic::document inline generateBook(const Book& book) {
+    bsoncxx::builder::basic::document inline generateBook(const string& name, const string& author) {
         bsoncxx::builder::basic::array userArray;
-        for (const auto& user : book.users) {
-            bsoncxx::builder::basic::document userDoc;
-            userDoc.append(
-                kvp("_id", user.userId),
-                kvp("fullname", user.fullname),
-                kvp("email", user.email),
-                kvp("rentedDate", bsoncxx::types::b_date{user.rentedDate}),
-                kvp("dueDate", bsoncxx::types::b_date{user.dueDate})
-            );
-
-            userArray.append(userDoc);
-        }
-
         bsoncxx::builder::basic::document doc;
         doc.append(
-            kvp("name", book.name),
-            kvp("author", book.author),
+            kvp("name", name),
+            kvp("author", author),
             kvp("users", userArray)
         );
 
@@ -84,13 +71,13 @@ namespace BookFactory {
         return books;
     }
 
-    bsoncxx::document::value inline generateUseInfo(const UserInfo& userInfo) {
+    bsoncxx::document::value inline generateUseInfo(const bsoncxx::oid& userId, const string& fullname, const string& email, const chrono::system_clock::time_point& rentedDate, const chrono::system_clock::time_point& dueDate) {
         bsoncxx::builder::basic::document userInfoDocument{};
-        userInfoDocument.append(kvp("_id", userInfo.userId),
-            kvp("fullname", userInfo.fullname),
-            kvp("email", userInfo.email),
-            kvp("rentedDate", bsoncxx::types::b_date{userInfo.rentedDate}),
-            kvp("dueDate", bsoncxx::types::b_date{userInfo.dueDate})
+        userInfoDocument.append(kvp("_id", userId),
+            kvp("fullname", fullname),
+            kvp("email", email),
+            kvp("rentedDate", bsoncxx::types::b_date{rentedDate}),
+            kvp("dueDate", bsoncxx::types::b_date{dueDate})
         );
 
         const auto updateDocument = make_document(

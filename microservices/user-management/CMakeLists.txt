@@ -20,12 +20,12 @@ add_executable(user-management main.cpp
         infrastructure/db-connection.hpp
         application/user-application-service.hpp
         message-listener.hpp
-        dtos/request/user/create-user-request-dto.hpp
-        dtos/response/user/create-user-response-dto.hpp
-        infrastructure/nlohmann-extensions.hpp
-        dtos/response/user/result-user-response-dto.hpp
-        dtos/response/user/result-user-by-id-response-dto.hpp
-        dtos/request/user/update-user-request-dto.hpp
+        dtos/request/user/create-user-request.hpp
+        dtos/response/user/create-user-response.hpp
+        ../../infrastructure/nlohmann-extensions.hpp
+        dtos/response/user/user-response.hpp
+        dtos/response/user/user-by-id-response.hpp
+        dtos/request/user/update-user-request.hpp
 )
 
 target_link_libraries(user-management PRIVATE

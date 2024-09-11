@@ -6,6 +6,10 @@
 #include "../../infrastructure/utility.hpp"
 #include <nlohmann/json.hpp>
 
+#include "../../infrastructure/response-dto.hpp"
+#include "dtos/request/book/create-book-request.hpp"
+#include "dtos/request/user-info/user-info-request.hpp"
+
 using json = nlohmann::json;
 using namespace std;
 
@@ -18,106 +22,114 @@ namespace MessageListener {
         adapter.init(url);
 
         adapter.consume("book.insert", [&adapter](const std::string_view &body, const uint64_t deliveryTag, const bool redelivered) {
-            json jsonData = Utility::getMessage(body.data(), body.size());
+            ResponseDto message = Utility::getMessage(body.data(), body.size());
 
-            const Book book { jsonData["name"].get<string>(), jsonData["author"].get<string>()};
+            const CreateBookRequest book { message.jsonData["name"].get<string>(), message.jsonData["author"].get<string>()};
             const auto result = BookApplicationService::createBook(book);
 
-            jsonData["responseMessage"] = result;
-            jsonData["index"] = jsonData["index"].get<size_t>() +1;
+            message.jsonData = result;
+            message.index += 1;
 
-            adapter.sendMessage(aggregator, jsonData.dump());
+            adapter.sendMessage(aggregator, message.to_string());
             adapter.ack(deliveryTag);
         });
 
         adapter.consume("book.getList", [&adapter](const std::string_view &body, const uint64_t deliveryTag, const bool redelivered) {
-            json jsonData = Utility::getMessage(body.data(), body.size());
+            ResponseDto message = Utility::getMessage(body.data(), body.size());
 
             const auto bookList = BookApplicationService::getBookList();
-            jsonData["responseMessage"] = bookList;
-            jsonData["index"] = jsonData["index"].get<size_t>() +1;
+            message.jsonData = bookList;
+            message.index += 1;
 
-            adapter.sendMessage(aggregator, jsonData.dump());
+            adapter.sendMessage(aggregator, message.to_string());
             adapter.ack(deliveryTag);
         });
 
         adapter.consume("book.getById", [&adapter](const std::string_view &body, const uint64_t deliveryTag, const bool redelivered) {
-            if(json jsonData = Utility::getMessage(body.data(), body.size()); !jsonData["bookId"].get<string>().empty()) {
-                const auto book = BookApplicationService::getBookById(static_cast<bsoncxx::oid>(jsonData["bookId"].get<string>()));
+            if(ResponseDto message = Utility::getMessage(body.data(), body.size()); !message.jsonData["bookId"].get<string>().empty()) {
+                const auto book = BookApplicationService::getBookById(static_cast<bsoncxx::oid>(message.jsonData["bookId"].get<string>()));
 
-                jsonData["responseMessage"] = book;
-                jsonData["index"] = jsonData["index"].get<size_t>() +1;
+                message.jsonData = book;
+                message.index += 1;
 
-                adapter.sendMessage(aggregator, jsonData.dump());
+                adapter.sendMessage(aggregator, message.to_string());
                 adapter.ack(deliveryTag);
             }
         });
 
         adapter.consume("book.delete", [&adapter](const std::string_view &body, const uint64_t deliveryTag, const bool redelivered) {
-            if(json jsonData = Utility::getMessage(body.data(), body.size()); !jsonData["id"].get<string>().empty()) {
-                BookApplicationService::deleteBook(static_cast<bsoncxx::oid>(jsonData["id"].get<string>()));
+            if(ResponseDto message = Utility::getMessage(body.data(), body.size()); !message.jsonData["id"].get<string>().empty()) {
+                BookApplicationService::deleteBook(static_cast<bsoncxx::oid>(message.jsonData["id"].get<string>()));
 
-                jsonData["index"] = jsonData["index"].get<size_t>() +1;
-                jsonData["responseMessage"] = "book successfully deleted";
+                message.jsonData = "book successfully deleted";
+                message.index += 1;
 
-                adapter.sendMessage(aggregator, jsonData.dump());
+                adapter.sendMessage(aggregator, message.to_string());
                 adapter.ack(deliveryTag);
             }
         });
 
         adapter.consume("book.update",[&adapter](const std::string_view &body, const uint64_t deliveryTag, const bool redelivered) {
-            json jsonData = Utility::getMessage(body.data(), body.size());
+            ResponseDto message = Utility::getMessage(body.data(), body.size());
 
-            const Book book { static_cast<bsoncxx::oid>(jsonData["id"].get<string>()),jsonData["name"].get<string>(),
-                jsonData["author"].get<string>()};
+            const UpdateBookRequest book { message.jsonData["id"].get<string>(),message.jsonData["name"].get<string>(), message.jsonData["author"].get<string>()};
 
             BookApplicationService::updateBook(book);
-            jsonData["responseMessage"] = "book successfully updated";
-            jsonData["index"] = jsonData["index"].get<size_t>() +1;
+            message.jsonData = "book successfully updated";
+            message.index += 1;
 
-            adapter.sendMessage(aggregator, jsonData.dump());
+            adapter.sendMessage(aggregator, message.to_string());
             adapter.ack(deliveryTag);
         });
 
         adapter.consume("book.addUserToBook",[&adapter](const std::string_view &body, const uint64_t deliveryTag, const bool redelivered) {
-            json jsonData = Utility::getMessage(body.data(), body.size());
+            ResponseDto message = Utility::getMessage(body.data(), body.size());
 
-            UserInfo userInfo = jsonData["responseMessage"];
+            UserInfoRequest userInfo = message.jsonData;
             userInfo.rentedDate = chrono::system_clock::now();
             userInfo.dueDate = chrono::system_clock::now();
 
-            const auto result = BookApplicationService::addUserToBook(static_cast<bsoncxx::oid>
-                                                                    (jsonData["bookId"].get<string>()), userInfo);
+            const auto result = BookApplicationService::addUserToBook(
+                static_cast<bsoncxx::oid>(message.jsonData["bookId"].get<string>()),
+                static_cast<bsoncxx::oid>(userInfo.userId),
+                userInfo.fullname,
+                userInfo.email,
+                userInfo.rentedDate,
+                userInfo.dueDate
+            );
 
-            jsonData["responseMessage"] = result;
-            jsonData["index"] = jsonData["index"].get<size_t>() + 1;
+            message.jsonData = result;
+            message.index += 1;
 
-            adapter.sendMessage(aggregator, jsonData.dump());
+            adapter.sendMessage(aggregator, message.to_string());
             adapter.ack(deliveryTag);
         });
 
         adapter.consume("book.deleteUserToBooks",[&adapter](const std::string_view &body, const uint64_t deliveryTag, const bool redelivered) {
-            json jsonData = Utility::getMessage(body.data(), body.size());
+            ResponseDto message = Utility::getMessage(body.data(), body.size());
 
-            BookApplicationService::deleteUserToBook(static_cast<bsoncxx::oid>(jsonData["userId"].get<string>()));
+            std::cerr << message.to_string();
 
-            jsonData["responseMessage"] = "user successfully deleted from books";
-            jsonData["index"] = jsonData["index"].get<size_t>() + 1;
+            BookApplicationService::deleteUserToBook(static_cast<bsoncxx::oid>(message.jsonData["userId"].get<string>()));
 
-            adapter.sendMessage(aggregator, jsonData.dump());
+            message.jsonData = "";
+            message.index += 1;
+
+            adapter.sendMessage(aggregator, message.to_string());
             adapter.ack(deliveryTag);
         });
 
         adapter.consume("book.updateUserToBooks",[&adapter](const std::string_view &body, const uint64_t deliveryTag, const bool redelivered) {
-            json jsonData = Utility::getMessage(body.data(), body.size());
-            const auto userInfo = jsonData.get<UserInfo>();
+            ResponseDto message = Utility::getMessage(body.data(), body.size());
 
-            BookApplicationService::updateUserToBooks(static_cast<bsoncxx::oid>(jsonData["userId"].get<string>()), userInfo);
+            const auto userInfo = message.jsonData.get<UserInfo>();
 
-            jsonData["responseMessage"] = "user successfully updated from books";
-            jsonData["index"] = jsonData["index"].get<size_t>() + 1;
+            BookApplicationService::updateUserToBooks(static_cast<bsoncxx::oid>(message.jsonData["userId"].get<string>()), userInfo);
 
-            adapter.sendMessage(aggregator, jsonData.dump());
+            message.jsonData =  "user successfully updated from books";
+            message.index += 1;
+
+            adapter.sendMessage(aggregator, message.to_string());
             adapter.ack(deliveryTag);
         });
 

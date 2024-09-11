@@ -7,18 +7,17 @@
 
 namespace UserService {
 
-    CreateUserResponseDto inline createUser(const CreateUserRequestDto& dto) {
-        // todo: Validation işlemleri yapılacak (user bir veya birden fazla alanı boş olabilir)
-        const bsoncxx::builder::basic::document document = UserFactory::generateUser(dto);
+    CreateUserResponse inline createUser(const string& fullname, const string& email) {
+        const bsoncxx::builder::basic::document document = UserFactory::generateUser(fullname, email);
 
         return UserRepository::createUser(document);
     }
 
-    vector<ResultUserResponseDto> inline getUserList() {
+    vector<User> inline getUserList() {
         return UserRepository::getUserList();
     }
 
-    ResultUserByIdResponseDto inline getUserById(const bsoncxx::oid& id) {
+    User inline getUserById(const bsoncxx::oid& id) {
         return UserRepository::getUserById(id);
     }
 
@@ -26,8 +25,8 @@ namespace UserService {
         UserRepository::removeUserById(id);
     }
 
-    void inline updateUser(const UpdateUserRequestDto& dto) {
-        UserRepository::updateUser(dto);
+    void inline updateUser(const bsoncxx::oid& userId, const string& fullname, const string& email, const bool& isActive) {
+        UserRepository::updateUser(userId, fullname, email, isActive);
     }
 }
 

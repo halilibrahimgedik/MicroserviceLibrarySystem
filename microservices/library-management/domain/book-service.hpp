@@ -13,12 +13,8 @@ namespace BookService {
         return BookRepository::getBookList();
     }
 
-    Book inline createBook(const Book& book) {
-        if(BookRepository::any(book)) {
-           throw runtime_error("Book already exists");
-        }
-
-        const auto document = BookFactory::generateBook(book);
+    Book inline createBook(const string& name, const string& author) {
+        const auto document = BookFactory::generateBook(name, author);
         return BookRepository::createBook(document);
     }
 
@@ -26,12 +22,12 @@ namespace BookService {
         BookRepository::deleteBook(id);
     }
 
-    void inline updateBook(const Book& book) {
-        BookRepository::updateBook(book);
+    void inline updateBook(const bsoncxx::oid& bookId, const string& name, const string& author) {
+        BookRepository::updateBook(bookId, name, author);
     }
 
-    Book inline addUserToBook(const bsoncxx::oid id, const UserInfo& userInfo) {
-        return BookRepository::addUserToBook(id, userInfo);
+    Book inline addUserToBook(const bsoncxx::oid bookId, const bsoncxx::oid& userId, const string& fullname, const string& email, const chrono::system_clock::time_point& rentedDate, const chrono::system_clock::time_point& dueDate) {
+        return BookRepository::addUserToBook(bookId, userId, fullname, email, rentedDate, dueDate);
     }
 
     void inline deleteUserToBooks(const bsoncxx::oid& userId) {

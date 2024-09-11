@@ -3,18 +3,18 @@
 
 
 #include <string>
-#include "../../../infrastructure/nlohmann-extensions.hpp"
+#include "../../../../../infrastructure/nlohmann-extensions.hpp"
 
-class UpdateUserRequestDto {
+class UpdateUserRequest {
 public:
-    UpdateUserRequestDto() = default;
+    UpdateUserRequest() = default;
 
     std::string userId;
     std::string fullname;
     std::string email;
     bool isActive {};
 
-    NLOHMANN_DEFINE_TYPE_INTRUSIVE(UpdateUserRequestDto, userId, fullname, email, isActive)
+    NLOHMANN_DEFINE_TYPE_INTRUSIVE(UpdateUserRequest, userId, fullname, email, isActive)
 };
 
 #endif //UPDATE_USER_REQUEST_DTO_HPP

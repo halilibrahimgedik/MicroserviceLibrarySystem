@@ -6,6 +6,8 @@
 #include <nlohmann/json.hpp>
 #include <thread>
 #include <chrono>
+
+#include "../infrastructure/response-dto.hpp"
 #include "../infrastructure/rabbit-mq-adapter.hpp"
 #include "../infrastructure/utility.hpp"
 #include "../libs/libcpp-event-hub/src/libcpp-event-hub.hpp"
@@ -21,28 +23,23 @@ namespace HttpListener {
     void inline consumeQueue(RabbitMQAdapter &adapter) {
         adapter.consume("gateway",
         [&adapter](const string_view &body, const uint64_t deliveryTag, bool redelivered) {
-            const string message(body.data(), body.size());
+            const ResponseDto response = Utility::getMessage(body.data(),body.size());
 
-            if (!message.empty()) {
-                json jsonMessage = json::parse(message);
-
-                eventHub.emit("messageConsumed", jsonMessage["requestId"].get<string>(),
-                                jsonMessage["responseMessage"].dump());
-
-                adapter.ack(deliveryTag);
-            }
+            eventHub.emit("messageConsumed", response.requestId, response);
+            adapter.ack(deliveryTag);
         });
 
         adapter.start();
     }
 
-    string inline getData(const string& uniqueRequestId) {
+    std::string inline getData(const string& uniqueRequestId) {
         json resultJson;
         // event listener
-        const auto resultListener =eventHub.addListener<string>("messageConsumed",
-            [&resultJson, &uniqueRequestId](const string& eventName,const string& sender,const string& data){
+        const auto resultListener =eventHub.addListener<ResponseDto>("messageConsumed",
+            [&resultJson, &uniqueRequestId](const string& eventName,const string& sender,const ResponseDto& response){
                 if (sender == uniqueRequestId) {
-                    resultJson = json::parse(data);
+                    resultJson["data"] = response.jsonData;
+                    resultJson["errors"] = response.errors;
                 }
         });
 
@@ -67,20 +64,20 @@ namespace HttpListener {
 
             string uniqueRequestId = Utility::generateUUID(); // setting unique id for each request.
 
-            json jsonData;
+            ResponseDto message;
             if (!request.body.empty()) {
                 try {
-                    jsonData = json::parse(request.body);
+                    message.jsonData = json::parse(request.body);
                 } catch (const json::exception &e) {
                     std::cerr << e.what() << std::endl;
                     return crow::response{400, "JSON parse error"};
                 }
             }
 
-            jsonData["action"] = action;
-            jsonData["requestId"] = uniqueRequestId;
+            message.action = action;
+            message.requestId = uniqueRequestId;
 
-            adapter.sendMessage("aggregator", jsonData.dump());
+            adapter.sendMessage("aggregator", message.to_string());
 
             crow::response response{200, getData(uniqueRequestId)};
             response.add_header("Content-Type", "application/json");
