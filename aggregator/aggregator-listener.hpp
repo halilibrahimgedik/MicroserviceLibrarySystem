@@ -4,6 +4,7 @@
 #include <nlohmann/json.hpp>
 #include "../infrastructure/rabbit-mq-adapter.hpp"
 #include "queue-map.hpp"
+#include "../infrastructure/response-dto.hpp"
 #include "../infrastructure/utility.hpp"
 
 using namespace std;
@@ -16,26 +17,23 @@ namespace AggregatorListener {
         adapter.init("amqp://guest:guest@localhost:5672/");
 
         adapter.consume("aggregator", [&adapter](const std::string_view &body, const uint64_t deliveryTag, bool redelivered) {
-            json jsonData = Utility::getMessage(body.data(),body.size());
-            const auto action = jsonData["action"].get<std::string>();
 
-            std::cerr << jsonData.dump(4) << std::endl;
+            ResponseDto message = Utility::getMessage(body.data(),body.size());
 
-            // action değerini map'de arayalım
-            if (const auto iterator{QueueMap::actionQueueMap.find(action)}; iterator != QueueMap::actionQueueMap.end()) {
+            const auto iterator{QueueMap::actionQueueMap.find(message.action)};
+            if ( iterator != QueueMap::actionQueueMap.end()) {
                 const auto& actionInfo = iterator->second;
 
-                if (const size_t comingIndex = jsonData.contains("index") ?
-                                        jsonData["index"].get<size_t>() : 0; comingIndex < actionInfo.queues.size()) {
-                    jsonData["index"] = comingIndex;
-                    adapter.sendMessage(actionInfo.queues[comingIndex], jsonData.dump());
-                } else {
-                    adapter.sendMessage("gateway", jsonData.dump());
+                if(const int comingIndex = message.index == 0 ? 0 : message.index; message.index < actionInfo.queues.size()) {
+                    message.index = comingIndex;
+                    adapter.sendMessage(actionInfo.queues[comingIndex], message.to_string());
+                }else {
+                    adapter.sendMessage("gateway", message.to_string());
                 }
 
                 adapter.ack(deliveryTag);
             } else {
-                std::cerr << "action not found in the QueueMap: " << action << endl;
+                std::cerr << "action not found in the QueueMap: " << message.action << endl;
             }
         });
 

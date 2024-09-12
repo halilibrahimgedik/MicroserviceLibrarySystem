@@ -2,7 +2,6 @@
 #define BOOK_REPOSITORY_HPP
 
 
-#include "mongocxx/instance.hpp"
 #include "book-factory.hpp"
 #include "../infrustructure/db-connection.hpp"
 
@@ -52,18 +51,18 @@ namespace BookRepository {
         collection.delete_one(filter.view());
     }
 
-    void inline updateBook(const Book& book) {
+    void inline updateBook(const bsoncxx::oid& bookId, const string& name, const string& author) {
         const auto& instance = DBConnection::getInstance();
         auto collection = instance.getCollection();
 
         bsoncxx::builder::basic::document filter{};
-        filter.append(kvp("_id", book.id));
+        filter.append(kvp("_id", bookId));
 
         bsoncxx::builder::basic::document updateFilter{};
         updateFilter.append(kvp("$set",
            make_document(
-                   kvp("name", book.name),
-                   kvp("author", book.author)
+                   kvp("name", name),
+                   kvp("author", author)
                )
            )
        );
@@ -86,7 +85,7 @@ namespace BookRepository {
         return result.has_value();
     }
 
-    Book inline addUserToBook(const bsoncxx::oid bookId, const UserInfo& userInfo) {
+    Book inline addUserToBook(const bsoncxx::oid bookId, const bsoncxx::oid& userId, const string& fullname, const string& email, const chrono::system_clock::time_point& rentedDate, const chrono::system_clock::time_point& dueDate) {
         const auto& instance = DBConnection::getInstance();
         auto collection = instance.getCollection();
 
@@ -95,7 +94,7 @@ namespace BookRepository {
 
         const auto optionalValue = collection.find_one(filter.view());
         const auto book = BookFactory::generateBookById(optionalValue.value());
-        const auto updateDocument = BookFactory::generateUseInfo(userInfo);
+        const auto updateDocument = BookFactory::generateUseInfo(userId, fullname, email, rentedDate, dueDate);
 
         collection.update_one(filter.view(), updateDocument.view());
 

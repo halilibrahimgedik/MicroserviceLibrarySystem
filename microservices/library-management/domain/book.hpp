@@ -34,24 +34,6 @@ public:
     string name;
     string author;
     vector<UserInfo> users;
-
-    friend void to_json(json& json, const Book& b) {
-        json = nlohmann::json{
-            {"id", b.id.to_string()},
-            {"name", b.name},
-            {"author", b.author},
-            {"users", b.users}
-        };
-    }
-
-    friend void from_json(const json& json, Book& b) {
-        b.id = bsoncxx::oid{json.at("id").get<string>()};
-        json.at("name").get_to(b.name);
-        json.at("author").get_to(b.author);
-        b.users = json.at("users").get<vector<UserInfo>>();
-    }
-
-    // NLOHMANN_DEFINE_TYPE_INTRUSIVE(Book, name, author, id, users);
 };
 
 
