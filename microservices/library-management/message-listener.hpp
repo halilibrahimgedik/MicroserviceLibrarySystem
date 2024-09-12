@@ -29,6 +29,7 @@ namespace MessageListener {
 
             message.jsonData = result;
             message.index += 1;
+            message.statusCode = 201;
 
             adapter.sendMessage(aggregator, message.to_string());
             adapter.ack(deliveryTag);
@@ -40,6 +41,7 @@ namespace MessageListener {
             const auto bookList = BookApplicationService::getBookList();
             message.jsonData = bookList;
             message.index += 1;
+            message.statusCode = 200;
 
             adapter.sendMessage(aggregator, message.to_string());
             adapter.ack(deliveryTag);
@@ -51,6 +53,7 @@ namespace MessageListener {
 
                 message.jsonData = book;
                 message.index += 1;
+                message.statusCode = 200;
 
                 adapter.sendMessage(aggregator, message.to_string());
                 adapter.ack(deliveryTag);
@@ -61,8 +64,9 @@ namespace MessageListener {
             if(ResponseDto message = Utility::getMessage(body.data(), body.size()); !message.jsonData["id"].get<string>().empty()) {
                 BookApplicationService::deleteBook(static_cast<bsoncxx::oid>(message.jsonData["id"].get<string>()));
 
-                message.jsonData = "book successfully deleted";
+                message.jsonData.clear();
                 message.index += 1;
+                message.statusCode = 204;
 
                 adapter.sendMessage(aggregator, message.to_string());
                 adapter.ack(deliveryTag);
@@ -75,8 +79,9 @@ namespace MessageListener {
             const UpdateBookRequest book { message.jsonData["id"].get<string>(),message.jsonData["name"].get<string>(), message.jsonData["author"].get<string>()};
 
             BookApplicationService::updateBook(book);
-            message.jsonData = "book successfully updated";
+            message.jsonData.clear();
             message.index += 1;
+            message.statusCode = 204;
 
             adapter.sendMessage(aggregator, message.to_string());
             adapter.ack(deliveryTag);
@@ -100,6 +105,7 @@ namespace MessageListener {
 
             message.jsonData = result;
             message.index += 1;
+            message.statusCode = 200;
 
             adapter.sendMessage(aggregator, message.to_string());
             adapter.ack(deliveryTag);
@@ -112,8 +118,9 @@ namespace MessageListener {
 
             BookApplicationService::deleteUserToBook(static_cast<bsoncxx::oid>(message.jsonData["userId"].get<string>()));
 
-            message.jsonData = "";
+            message.jsonData.clear();
             message.index += 1;
+            message.statusCode = 204;
 
             adapter.sendMessage(aggregator, message.to_string());
             adapter.ack(deliveryTag);
@@ -126,8 +133,9 @@ namespace MessageListener {
 
             BookApplicationService::updateUserToBooks(static_cast<bsoncxx::oid>(message.jsonData["userId"].get<string>()), userInfo);
 
-            message.jsonData =  "user successfully updated from books";
+            message.jsonData.clear();
             message.index += 1;
+            message.statusCode = 204;
 
             adapter.sendMessage(aggregator, message.to_string());
             adapter.ack(deliveryTag);

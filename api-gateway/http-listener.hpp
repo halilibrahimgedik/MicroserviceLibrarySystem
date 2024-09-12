@@ -32,24 +32,36 @@ namespace HttpListener {
         adapter.start();
     }
 
-    std::string inline getData(const string& uniqueRequestId) {
+    crow::response inline getData(const string& uniqueRequestId) {
         json resultJson;
+        int statusCode {0};
         // event listener
         const auto resultListener =eventHub.addListener<ResponseDto>("messageConsumed",
-            [&resultJson, &uniqueRequestId](const string& eventName,const string& sender,const ResponseDto& response){
+            [&resultJson, &uniqueRequestId, &statusCode](const string& eventName,const string& sender,const ResponseDto& response){
                 if (sender == uniqueRequestId) {
-                    resultJson["data"] = response.jsonData;
-                    resultJson["errors"] = response.errors;
+
+                    if(!response.jsonData.empty()) {
+                        resultJson["data"] = response.jsonData;
+                    }
+                    if(response.errors.has_value()) {
+                        resultJson["errors"] = response.errors;
+                    }
+
+                    statusCode = response.statusCode;
                 }
         });
 
-        while (resultJson.empty()) {
+        while (resultJson.empty() && statusCode == 0) {
             std::this_thread::sleep_for(std::chrono::milliseconds(5));
         }
 
         eventHub.removeListener("messageConsumed", resultListener);
 
-        return resultJson.dump();
+        if(resultJson.empty()) {
+            return crow:: response{statusCode};
+        }
+
+        return {statusCode, resultJson.dump()};
     }
 
     void inline startApi(RabbitMQAdapter& adapter) {
@@ -79,7 +91,7 @@ namespace HttpListener {
 
             adapter.sendMessage("aggregator", message.to_string());
 
-            crow::response response{200, getData(uniqueRequestId)};
+            crow::response response = getData(uniqueRequestId);
             response.add_header("Content-Type", "application/json");
             return response;
         });

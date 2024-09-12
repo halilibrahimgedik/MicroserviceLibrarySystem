@@ -28,6 +28,10 @@ namespace MessageListener {
                     const CreateUserRequest createUser = message.jsonData;
                     auto newUser = UserApplicationService::createUser(createUser);
                     message.jsonData = newUser;
+                    message.statusCode = 201;
+                }
+                else {
+                    message.statusCode = 400;
                 }
 
                 message.index += 1 ;
@@ -51,6 +55,7 @@ namespace MessageListener {
 
                 message.jsonData = jsonArray;
                 message.index += 1;
+                message.statusCode = 200;
 
                 adapter.sendMessage(aggregator, message.to_string());
                 adapter.ack(deliveryTag);
@@ -63,8 +68,8 @@ namespace MessageListener {
                                                                         (message.jsonData["userId"].get<string>()));
 
                     message.jsonData.update(user);
-                    std::cerr << endl << message.jsonData.dump(4) << std::endl;
                     message.index += 1;
+                    message.statusCode = 200;
 
                     adapter.sendMessage(aggregator, message.to_string());
                     adapter.ack(deliveryTag);
@@ -79,6 +84,7 @@ namespace MessageListener {
                     UserApplicationService::deleteUserById(userId);
 
                     message.index += 1;
+                    message.statusCode = 204;
 
                     adapter.sendMessage(aggregator, message.to_string());
                     adapter.ack(deliveryTag);
@@ -94,6 +100,7 @@ namespace MessageListener {
 
                 message.jsonData = user;
                 message.index +=1;
+                message.statusCode = 204;
 
                 adapter.sendMessage(aggregator, message.to_string());
                 adapter.ack(deliveryTag);
