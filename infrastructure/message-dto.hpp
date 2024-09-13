@@ -7,13 +7,14 @@
 #include "nlohmann/json.hpp"
 #include "nlohmann-extensions.hpp"
 
-class ResponseDto {
+class MessageDto {
 public:
-  ResponseDto() = default;
-  ResponseDto(std::string action, std::string requestId, const int& index, const int& statusCode)
+  MessageDto() = default;
+  MessageDto(std::string action, std::string requestId, const int& index, const int& statusCode)
     : action(std::move(action)), requestId(std::move(requestId)), index(index), statusCode(statusCode) {}
 
-  nlohmann::json jsonData;
+  nlohmann::json responseData;
+  nlohmann::json serviceData;
   std::optional<std::vector<std::string>> errors;
   std::string action;
   std::string requestId;
@@ -27,7 +28,7 @@ public:
   }
 
 
-  NLOHMANN_DEFINE_TYPE_INTRUSIVE(ResponseDto, jsonData, errors, action, requestId, index, statusCode);
+  NLOHMANN_DEFINE_TYPE_INTRUSIVE(MessageDto, responseData, serviceData,errors, action, requestId, index, statusCode);
 };
 
 #endif // CUSTOM_RESPONSE_DTO_HPP

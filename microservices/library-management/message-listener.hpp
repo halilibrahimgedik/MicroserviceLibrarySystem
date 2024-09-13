@@ -6,7 +6,7 @@
 #include "../../infrastructure/utility.hpp"
 #include <nlohmann/json.hpp>
 
-#include "../../infrastructure/response-dto.hpp"
+#include "../../infrastructure/message-dto.hpp"
 #include "dtos/request/book/create-book-request.hpp"
 #include "dtos/request/user-info/user-info-request.hpp"
 
@@ -22,12 +22,13 @@ namespace MessageListener {
         adapter.init(url);
 
         adapter.consume("library-management.insert", [&adapter](const std::string_view &body, const uint64_t deliveryTag, const bool redelivered) {
-            ResponseDto message = Utility::getMessage(body.data(), body.size());
+            MessageDto message = Utility::getMessage(body.data(), body.size());
 
-            const CreateBookRequest book { message.jsonData["name"].get<string>(), message.jsonData["author"].get<string>()};
+            const CreateBookRequest book { message.serviceData["name"].get<string>(),
+                                            message.serviceData["author"].get<string>()};
             const auto result = BookApplicationService::createBook(book);
 
-            message.jsonData = result;
+            message.responseData = result;
             message.index += 1;
             message.statusCode = 201;
 
@@ -36,10 +37,10 @@ namespace MessageListener {
         });
 
         adapter.consume("library-management.getList", [&adapter](const std::string_view &body, const uint64_t deliveryTag, const bool redelivered) {
-            ResponseDto message = Utility::getMessage(body.data(), body.size());
+            MessageDto message = Utility::getMessage(body.data(), body.size());
 
             const auto bookList = BookApplicationService::getBookList();
-            message.jsonData = bookList;
+            message.responseData = bookList;
             message.index += 1;
             message.statusCode = 200;
 
@@ -48,10 +49,10 @@ namespace MessageListener {
         });
 
         adapter.consume("library-management.getById", [&adapter](const std::string_view &body, const uint64_t deliveryTag, const bool redelivered) {
-            if(ResponseDto message = Utility::getMessage(body.data(), body.size()); !message.jsonData["bookId"].get<string>().empty()) {
-                const auto book = BookApplicationService::getBookById(static_cast<bsoncxx::oid>(message.jsonData["bookId"].get<string>()));
+            if(MessageDto message = Utility::getMessage(body.data(), body.size()); !message.serviceData["bookId"].get<string>().empty()) {
+                const auto book = BookApplicationService::getBookById(static_cast<bsoncxx::oid>(message.serviceData["bookId"].get<string>()));
 
-                message.jsonData = book;
+                message.responseData = book;
                 message.index += 1;
                 message.statusCode = 200;
 
@@ -61,10 +62,9 @@ namespace MessageListener {
         });
 
         adapter.consume("library-management.delete", [&adapter](const std::string_view &body, const uint64_t deliveryTag, const bool redelivered) {
-            if(ResponseDto message = Utility::getMessage(body.data(), body.size()); !message.jsonData["id"].get<string>().empty()) {
-                BookApplicationService::deleteBook(static_cast<bsoncxx::oid>(message.jsonData["id"].get<string>()));
+            if(MessageDto message = Utility::getMessage(body.data(), body.size()); !message.serviceData["id"].get<string>().empty()) {
+                BookApplicationService::deleteBook(static_cast<bsoncxx::oid>(message.serviceData["id"].get<string>()));
 
-                message.jsonData.clear();
                 message.index += 1;
                 message.statusCode = 204;
 
@@ -74,12 +74,13 @@ namespace MessageListener {
         });
 
         adapter.consume("library-management.update",[&adapter](const std::string_view &body, const uint64_t deliveryTag, const bool redelivered) {
-            ResponseDto message = Utility::getMessage(body.data(), body.size());
+            MessageDto message = Utility::getMessage(body.data(), body.size());
 
-            const UpdateBookRequest book { message.jsonData["id"].get<string>(),message.jsonData["name"].get<string>(), message.jsonData["author"].get<string>()};
+            const UpdateBookRequest book { message.serviceData["id"].get<string>(),
+                                    message.serviceData["name"].get<string>(),
+                                    message.serviceData["author"].get<string>()};
 
             BookApplicationService::updateBook(book);
-            message.jsonData.clear();
             message.index += 1;
             message.statusCode = 204;
 
@@ -88,14 +89,14 @@ namespace MessageListener {
         });
 
         adapter.consume("library-management.addUserToBook",[&adapter](const std::string_view &body, const uint64_t deliveryTag, const bool redelivered) {
-            ResponseDto message = Utility::getMessage(body.data(), body.size());
+            MessageDto message = Utility::getMessage(body.data(), body.size());
 
-            UserInfoRequest userInfo = message.jsonData;
+            UserInfoRequest userInfo = message.serviceData;
             userInfo.rentedDate = chrono::system_clock::now();
             userInfo.dueDate = chrono::system_clock::now();
 
             const auto result = BookApplicationService::addUserToBook(
-                static_cast<bsoncxx::oid>(message.jsonData["bookId"].get<string>()),
+                static_cast<bsoncxx::oid>(message.serviceData["bookId"].get<string>()),
                 static_cast<bsoncxx::oid>(userInfo.userId),
                 userInfo.fullname,
                 userInfo.email,
@@ -103,7 +104,7 @@ namespace MessageListener {
                 userInfo.dueDate
             );
 
-            message.jsonData = result;
+            message.responseData = result;
             message.index += 1;
             message.statusCode = 200;
 
@@ -112,13 +113,12 @@ namespace MessageListener {
         });
 
         adapter.consume("library-management.deleteUserToBooks",[&adapter](const std::string_view &body, const uint64_t deliveryTag, const bool redelivered) {
-            ResponseDto message = Utility::getMessage(body.data(), body.size());
+            MessageDto message = Utility::getMessage(body.data(), body.size());
 
             std::cerr << message.to_string();
 
-            BookApplicationService::deleteUserToBook(static_cast<bsoncxx::oid>(message.jsonData["userId"].get<string>()));
+            BookApplicationService::deleteUserToBook(static_cast<bsoncxx::oid>(message.serviceData["userId"].get<string>()));
 
-            message.jsonData.clear();
             message.index += 1;
             message.statusCode = 204;
 
@@ -127,13 +127,12 @@ namespace MessageListener {
         });
 
         adapter.consume("library-management.updateUserToBooks",[&adapter](const std::string_view &body, const uint64_t deliveryTag, const bool redelivered) {
-            ResponseDto message = Utility::getMessage(body.data(), body.size());
+            MessageDto message = Utility::getMessage(body.data(), body.size());
 
-            const auto userInfo = message.jsonData.get<UserInfoRequest>();
+            const auto userInfo = message.serviceData.get<UserInfoRequest>();
 
             BookApplicationService::updateUserToBooks(userInfo);
 
-            message.jsonData.clear();
             message.index += 1;
             message.statusCode = 204;
 

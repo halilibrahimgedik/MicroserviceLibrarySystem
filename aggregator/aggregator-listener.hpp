@@ -4,7 +4,7 @@
 #include <nlohmann/json.hpp>
 #include "../infrastructure/rabbit-mq-adapter.hpp"
 #include "queue-map.hpp"
-#include "../infrastructure/response-dto.hpp"
+#include "../infrastructure/message-dto.hpp"
 #include "../infrastructure/utility.hpp"
 
 using namespace std;
@@ -17,7 +17,7 @@ namespace AggregatorListener {
         adapter.init("amqp://guest:guest@localhost:5672/");
 
         adapter.consume("aggregator", [&adapter](const std::string_view &body, const uint64_t deliveryTag, bool redelivered) {
-            const ResponseDto message = Utility::getMessage(body.data(),body.size());
+            const MessageDto message = Utility::getMessage(body.data(),body.size());
 
             if (const auto iterator {QueueMap::actionQueueMap.find(message.action)}; iterator != QueueMap::actionQueueMap.end()) {
                 const auto& actionInfo = iterator->second;

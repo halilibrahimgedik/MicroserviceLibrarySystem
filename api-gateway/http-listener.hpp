@@ -7,7 +7,7 @@
 #include <thread>
 #include <chrono>
 
-#include "../infrastructure/response-dto.hpp"
+#include "../infrastructure/message-dto.hpp"
 #include "../infrastructure/rabbit-mq-adapter.hpp"
 #include "../infrastructure/utility.hpp"
 #include "../libs/libcpp-event-hub/src/libcpp-event-hub.hpp"
@@ -23,7 +23,7 @@ namespace HttpListener {
     void inline consumeQueue(RabbitMQAdapter &adapter) {
         adapter.consume("gateway",
         [&adapter](const string_view &body, const uint64_t deliveryTag, bool redelivered) {
-            const ResponseDto response = Utility::getMessage(body.data(),body.size());
+            const MessageDto response = Utility::getMessage(body.data(),body.size());
 
             eventHub.emit("messageConsumed", response.requestId, response);
             adapter.ack(deliveryTag);
@@ -36,16 +36,18 @@ namespace HttpListener {
         json resultJson;
         int statusCode {0};
         // event listener
-        const auto resultListener =eventHub.addListener<ResponseDto>("messageConsumed",
-            [&resultJson, &uniqueRequestId, &statusCode](const string& eventName,const string& sender,const ResponseDto& response){
+        const auto resultListener =eventHub.addListener<MessageDto>("messageConsumed",
+            [&resultJson, &uniqueRequestId, &statusCode](const string& eventName,const string& sender,const MessageDto& response){
                 if (sender == uniqueRequestId) {
 
-                    if(!response.jsonData.empty()) {
-                        resultJson["data"] = response.jsonData;
+                    if(!response.responseData.empty()) {
+                        resultJson["data"] = response.responseData;
+                        resultJson["errors"];
                     }
 
                     if(response.errors.has_value()) {
-                        resultJson["errors"] = response.errors;
+                        resultJson["data"] = response.errors.value();
+                        resultJson["errors"] = response.errors.value();
                     }
 
                     statusCode = response.statusCode;
@@ -77,10 +79,10 @@ namespace HttpListener {
 
             string uniqueRequestId = Utility::generateUUID(); // setting unique id for each request.
 
-            ResponseDto message;
+            MessageDto message;
             if (!request.body.empty()) {
                 try {
-                    message.jsonData = json::parse(request.body);
+                    message.serviceData = json::parse(request.body);
                 } catch (const json::exception &e) {
                     std::cerr << e.what() << std::endl;
                     return crow::response{400, "JSON parse error"};
