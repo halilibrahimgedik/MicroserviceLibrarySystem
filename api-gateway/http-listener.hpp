@@ -40,16 +40,13 @@ namespace HttpListener {
             [&resultJson, &uniqueRequestId, &statusCode](const string& eventName,const string& sender,const MessageDto& response){
                 if (sender == uniqueRequestId) {
 
-                    if(!response.responseData.empty()) {
-                        resultJson["data"] = response.responseData;
-                        resultJson["errors"];
-                    }
-
-                    if(response.errors.has_value()) {
-                        resultJson["data"] = response.errors.value();
+                    if(statusCode >= 400) {
                         resultJson["errors"] = response.errors.value();
+                        resultJson["data"];
                     }
 
+                    resultJson["data"] = response.responseData;
+                    resultJson["errors"];
                     statusCode = response.statusCode;
                 }
         });
