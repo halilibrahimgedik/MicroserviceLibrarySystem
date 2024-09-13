@@ -44,16 +44,9 @@ namespace MessageListener {
             [&adapter](const std::string_view& body, const uint64_t deliveryTag, bool redelivered) {
                 ResponseDto message = Utility::getMessage(body.data(),body.size());
 
-                const auto users = UserApplicationService::getUserList();
+                const auto userListResponse = UserApplicationService::getUserList();
 
-                json jsonArray = json::array();
-
-                for (const auto &resultUserResponseDto: users) {
-                    json userJson = resultUserResponseDto;
-                    jsonArray.push_back(userJson);
-                }
-
-                message.jsonData = jsonArray;
+                message.jsonData = userListResponse.users;
                 message.index += 1;
                 message.statusCode = 200;
 

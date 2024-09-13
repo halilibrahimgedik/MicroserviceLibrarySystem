@@ -3,6 +3,7 @@
 
 #include "../domain/user-service.hpp"
 #include "../dtos/request/user/update-user-request.hpp"
+#include "../dtos/response/user/user-list-response.hpp"
 
 namespace UserApplicationService {
 
@@ -10,13 +11,13 @@ namespace UserApplicationService {
         return UserService::createUser(createUser.fullname, createUser.email);
     }
 
-    vector<UserResponse> inline getUserList() {
+    UserListResponse inline getUserList() {
         const auto users = UserService::getUserList();
 
-        vector<UserResponse> userList;
+        UserListResponse userList;
         for(const auto& user : users) {
             UserResponse userResponse {user.userId.to_string(), user.fullname, user.email, user.isActive};
-            userList.push_back(move(userResponse));
+            userList.users.push_back(move(userResponse));
         }
 
         return userList;

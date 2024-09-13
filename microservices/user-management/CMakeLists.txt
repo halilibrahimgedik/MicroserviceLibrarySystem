@@ -26,6 +26,7 @@ add_executable(user-management main.cpp
         dtos/response/user/user-response.hpp
         dtos/response/user/user-by-id-response.hpp
         dtos/request/user/update-user-request.hpp
+        dtos/response/user/user-list-response.hpp
 )
 
 target_link_libraries(user-management PRIVATE
