@@ -23,7 +23,7 @@ public:
 
   [[nodiscard]] std::string to_string() const {
     const nlohmann::json jsonObj = *this;
-    return jsonObj.dump(4);
+    return jsonObj.dump();
   }
 
 

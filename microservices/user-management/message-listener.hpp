@@ -20,7 +20,7 @@ namespace MessageListener {
         auto& adapter = RabbitMQAdapter::getInstance();
         adapter.init(url);
 
-        adapter.consume("user.insert",
+        adapter.consume("user-management.insert",
             [&adapter](const std::string_view& body, const uint64_t deliveryTag,bool redelivered) {
                 ResponseDto message = Utility::getMessage(body.data(),body.size());
 
@@ -40,7 +40,7 @@ namespace MessageListener {
                 adapter.ack(deliveryTag);
         });
 
-        adapter.consume("user.getList",
+        adapter.consume("user-management.getList",
             [&adapter](const std::string_view& body, const uint64_t deliveryTag, bool redelivered) {
                 ResponseDto message = Utility::getMessage(body.data(),body.size());
 
@@ -61,7 +61,7 @@ namespace MessageListener {
                 adapter.ack(deliveryTag);
         });
 
-        adapter.consume("user.getById",
+        adapter.consume("user-management.getById",
             [&adapter](const std::string_view& body, const uint64_t deliveryTag, bool redelivered) {
                 if(ResponseDto message = Utility::getMessage(body.data(),body.size()); message.jsonData.contains("userId")) {
                     const auto user = UserApplicationService::getUserById(static_cast<bsoncxx::oid>
@@ -76,7 +76,7 @@ namespace MessageListener {
                 }
         });
 
-        adapter.consume("user.delete",
+        adapter.consume("user-management.delete",
             [&adapter](const std::string_view& body, const uint64_t deliveryTag, bool redelivered) {
                 if(ResponseDto message = Utility::getMessage(body.data(),body.size()); !message.jsonData["userId"].get<string>().empty()) {
                     const auto userId = static_cast<bsoncxx::oid>(message.jsonData["userId"].get<string>());
@@ -91,7 +91,7 @@ namespace MessageListener {
                 }
         });
 
-        adapter.consume("user.update",
+        adapter.consume("user-management.update",
             [&adapter](const std::string_view& body, const uint64_t deliveryTag, bool redelivered) {
                 ResponseDto message = Utility::getMessage(body.data(),body.size());
 

@@ -4,6 +4,7 @@
 #include "../domain/book-service.hpp"
 #include "../dtos/request/book/create-book-request.hpp"
 #include "../dtos/request/book/update-book-request.hpp"
+#include "../dtos/request/user-info/user-info-request.hpp"
 #include "../dtos/response/book/book-by-id-response.hpp"
 #include "../dtos/response/book/book-response.hpp"
 #include "../dtos/response/book/create-book-response.hpp"
@@ -72,8 +73,8 @@ namespace BookApplicationService {
         BookService::deleteUserToBooks(userId);
     }
 
-    void inline updateUserToBooks(const bsoncxx::oid& userId, const UserInfo& userInfo) {
-        BookService::updateUserToBooks(userId, userInfo);
+    void inline updateUserToBooks(const UserInfoRequest& userInfo) {
+        BookService::updateUserToBooks(static_cast<bsoncxx::oid>(userInfo.userId), userInfo.fullname, userInfo.email, userInfo.rentedDate, userInfo.dueDate);
     }
 }
 

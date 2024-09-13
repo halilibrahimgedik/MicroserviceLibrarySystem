@@ -21,7 +21,7 @@ namespace MessageListener {
         auto &adapter = RabbitMQAdapter::getInstance();
         adapter.init(url);
 
-        adapter.consume("book.insert", [&adapter](const std::string_view &body, const uint64_t deliveryTag, const bool redelivered) {
+        adapter.consume("library-management.insert", [&adapter](const std::string_view &body, const uint64_t deliveryTag, const bool redelivered) {
             ResponseDto message = Utility::getMessage(body.data(), body.size());
 
             const CreateBookRequest book { message.jsonData["name"].get<string>(), message.jsonData["author"].get<string>()};
@@ -35,7 +35,7 @@ namespace MessageListener {
             adapter.ack(deliveryTag);
         });
 
-        adapter.consume("book.getList", [&adapter](const std::string_view &body, const uint64_t deliveryTag, const bool redelivered) {
+        adapter.consume("library-management.getList", [&adapter](const std::string_view &body, const uint64_t deliveryTag, const bool redelivered) {
             ResponseDto message = Utility::getMessage(body.data(), body.size());
 
             const auto bookList = BookApplicationService::getBookList();
@@ -47,7 +47,7 @@ namespace MessageListener {
             adapter.ack(deliveryTag);
         });
 
-        adapter.consume("book.getById", [&adapter](const std::string_view &body, const uint64_t deliveryTag, const bool redelivered) {
+        adapter.consume("library-management.getById", [&adapter](const std::string_view &body, const uint64_t deliveryTag, const bool redelivered) {
             if(ResponseDto message = Utility::getMessage(body.data(), body.size()); !message.jsonData["bookId"].get<string>().empty()) {
                 const auto book = BookApplicationService::getBookById(static_cast<bsoncxx::oid>(message.jsonData["bookId"].get<string>()));
 
@@ -60,7 +60,7 @@ namespace MessageListener {
             }
         });
 
-        adapter.consume("book.delete", [&adapter](const std::string_view &body, const uint64_t deliveryTag, const bool redelivered) {
+        adapter.consume("library-management.delete", [&adapter](const std::string_view &body, const uint64_t deliveryTag, const bool redelivered) {
             if(ResponseDto message = Utility::getMessage(body.data(), body.size()); !message.jsonData["id"].get<string>().empty()) {
                 BookApplicationService::deleteBook(static_cast<bsoncxx::oid>(message.jsonData["id"].get<string>()));
 
@@ -73,7 +73,7 @@ namespace MessageListener {
             }
         });
 
-        adapter.consume("book.update",[&adapter](const std::string_view &body, const uint64_t deliveryTag, const bool redelivered) {
+        adapter.consume("library-management.update",[&adapter](const std::string_view &body, const uint64_t deliveryTag, const bool redelivered) {
             ResponseDto message = Utility::getMessage(body.data(), body.size());
 
             const UpdateBookRequest book { message.jsonData["id"].get<string>(),message.jsonData["name"].get<string>(), message.jsonData["author"].get<string>()};
@@ -87,7 +87,7 @@ namespace MessageListener {
             adapter.ack(deliveryTag);
         });
 
-        adapter.consume("book.addUserToBook",[&adapter](const std::string_view &body, const uint64_t deliveryTag, const bool redelivered) {
+        adapter.consume("library-management.addUserToBook",[&adapter](const std::string_view &body, const uint64_t deliveryTag, const bool redelivered) {
             ResponseDto message = Utility::getMessage(body.data(), body.size());
 
             UserInfoRequest userInfo = message.jsonData;
@@ -111,7 +111,7 @@ namespace MessageListener {
             adapter.ack(deliveryTag);
         });
 
-        adapter.consume("book.deleteUserToBooks",[&adapter](const std::string_view &body, const uint64_t deliveryTag, const bool redelivered) {
+        adapter.consume("library-management.deleteUserToBooks",[&adapter](const std::string_view &body, const uint64_t deliveryTag, const bool redelivered) {
             ResponseDto message = Utility::getMessage(body.data(), body.size());
 
             std::cerr << message.to_string();
@@ -126,12 +126,12 @@ namespace MessageListener {
             adapter.ack(deliveryTag);
         });
 
-        adapter.consume("book.updateUserToBooks",[&adapter](const std::string_view &body, const uint64_t deliveryTag, const bool redelivered) {
+        adapter.consume("library-management.updateUserToBooks",[&adapter](const std::string_view &body, const uint64_t deliveryTag, const bool redelivered) {
             ResponseDto message = Utility::getMessage(body.data(), body.size());
 
-            const auto userInfo = message.jsonData.get<UserInfo>();
+            const auto userInfo = message.jsonData.get<UserInfoRequest>();
 
-            BookApplicationService::updateUserToBooks(static_cast<bsoncxx::oid>(message.jsonData["userId"].get<string>()), userInfo);
+            BookApplicationService::updateUserToBooks(userInfo);
 
             message.jsonData.clear();
             message.index += 1;

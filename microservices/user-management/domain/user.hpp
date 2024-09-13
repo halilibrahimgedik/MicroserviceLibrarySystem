@@ -18,25 +18,6 @@ public:
     string fullname;
     string email;
     bool isActive {true};
-
-    friend void to_json(nlohmann::json& json, const User& user){
-        json = nlohmann::json{
-            {"userId", user.userId.to_string()},
-            {"fullname", user.fullname},
-            {"email", user.email},
-            {"isActive", user.isActive}
-        };
-    }
-
-    friend void from_json(const nlohmann::json& json, User& user) {
-        user.userId = static_cast<bsoncxx::oid>(json["userId"].get<string>());
-        user.fullname = json["fullname"].get<string>();
-        user.email = json["email"].get<string>();
-        user.isActive = json["isActive"].get<bool>();
-    }
-
-    // basic türler için macro çalışıyor, bsoncxx::oid kabul etmiyor
-     // NLOHMANN_DEFINE_TYPE_INTRUSIVE(User, fullname, email)
 };
 
 #endif //USER_HPP

@@ -34,8 +34,8 @@ namespace BookService {
         BookRepository::deleteUserToBooks(userId);
     }
 
-    void inline updateUserToBooks(const bsoncxx::oid& userId, const UserInfo& userInfo) {
-        BookRepository::updateUserToBooks(userId, userInfo);
+    void inline updateUserToBooks(const bsoncxx::oid& userId, const string& fullname, const string& email, const chrono::system_clock::time_point& rentedDate, const chrono::system_clock::time_point& dueDate) {
+        BookRepository::updateUserToBooks(userId, fullname, email, rentedDate, dueDate);
     }
 
 }

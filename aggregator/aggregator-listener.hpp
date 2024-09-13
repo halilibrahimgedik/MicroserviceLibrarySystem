@@ -17,23 +17,18 @@ namespace AggregatorListener {
         adapter.init("amqp://guest:guest@localhost:5672/");
 
         adapter.consume("aggregator", [&adapter](const std::string_view &body, const uint64_t deliveryTag, bool redelivered) {
+            const ResponseDto message = Utility::getMessage(body.data(),body.size());
 
-            ResponseDto message = Utility::getMessage(body.data(),body.size());
-
-            const auto iterator{QueueMap::actionQueueMap.find(message.action)};
-            if ( iterator != QueueMap::actionQueueMap.end()) {
+            if (const auto iterator {QueueMap::actionQueueMap.find(message.action)}; iterator != QueueMap::actionQueueMap.end()) {
                 const auto& actionInfo = iterator->second;
 
-                if(const int comingIndex = message.index == 0 ? 0 : message.index; message.index < actionInfo.queues.size()) {
-                    message.index = comingIndex;
-                    adapter.sendMessage(actionInfo.queues[comingIndex], message.to_string());
-                }else {
+                const int index = message.index;
+                message.index < actionInfo.queues.size() ?
+                    adapter.sendMessage(actionInfo.queues[index], message.to_string())
+                    :
                     adapter.sendMessage("gateway", message.to_string());
-                }
 
                 adapter.ack(deliveryTag);
-            } else {
-                std::cerr << "action not found in the QueueMap: " << message.action << endl;
             }
         });
 

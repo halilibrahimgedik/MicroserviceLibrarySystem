@@ -43,6 +43,7 @@ namespace HttpListener {
                     if(!response.jsonData.empty()) {
                         resultJson["data"] = response.jsonData;
                     }
+
                     if(response.errors.has_value()) {
                         resultJson["errors"] = response.errors;
                     }
