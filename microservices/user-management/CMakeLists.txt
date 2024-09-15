@@ -17,7 +17,6 @@ add_executable(user-management main.cpp
         domain/user-repository.hpp
         domain/user-factory.hpp
         domain/user-service.hpp
-        infrastructure/db-connection.hpp
         application/user-application-service.hpp
         message-listener.hpp
         dtos/request/user/create-user-request.hpp

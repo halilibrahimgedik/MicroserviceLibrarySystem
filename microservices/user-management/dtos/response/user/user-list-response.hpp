@@ -1,10 +1,8 @@
 #ifndef USER_LIST_RESPONSE_HPP
 #define USER_LIST_RESPONSE_HPP
-#include <vector>
-#include <nlohmann/detail/macro_scope.hpp>
 
+#include <vector>
 #include "user-response.hpp"
-#include "../../../../../infrastructure/nlohmann-extensions.hpp"
 
 class UserListResponse {
 public:

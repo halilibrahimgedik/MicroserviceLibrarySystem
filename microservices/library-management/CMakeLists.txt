@@ -17,7 +17,6 @@ add_executable(library-management main.cpp
         application/book-application-service.hpp
         domain/value-object/user-info.hpp
         message-listener.hpp
-        infrustructure/db-connection.hpp
         dtos/request/book/create-book-request.hpp
         dtos/response/book/create-book-response.hpp
         dtos/response/book/book-response.hpp
@@ -25,6 +24,7 @@ add_executable(library-management main.cpp
         dtos/response/book/book-by-id-response.hpp
         dtos/request/book/update-book-request.hpp
         dtos/request/user-info/user-info-request.hpp
+        dtos/response/book/book-list-response.hpp
 )
 
 target_link_libraries(library-management PRIVATE

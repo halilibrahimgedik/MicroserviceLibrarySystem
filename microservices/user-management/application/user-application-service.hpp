@@ -4,15 +4,17 @@
 #include "../domain/user-service.hpp"
 #include "../dtos/request/user/update-user-request.hpp"
 #include "../dtos/response/user/user-list-response.hpp"
+#include "../dtos/response/user/user-by-id-response.hpp"
+#include "../dtos/request/user/create-user-request.hpp"
 
 namespace UserApplicationService {
 
-    CreateUserResponse inline createUser(const CreateUserRequest& createUser) {
-        return UserService::createUser(createUser.fullname, createUser.email);
+    CreateUserResponse inline createUser(const CreateUserRequest& createUser, mongocxx::pool& pool) {
+        return UserService::createUser(createUser.fullname, createUser.email, pool);
     }
 
-    UserListResponse inline getUserList() {
-        const auto users = UserService::getUserList();
+    UserListResponse inline getUserList(mongocxx::pool& pool) {
+        const auto users = UserService::getUserList(pool);
 
         UserListResponse userList;
         for(const auto& user : users) {
@@ -23,18 +25,18 @@ namespace UserApplicationService {
         return userList;
     }
 
-    UserByIdResponse inline getUserById(const bsoncxx::oid& id) {
-        const auto user = UserService::getUserById(id);
+    UserByIdResponse inline getUserById(const bsoncxx::oid& id, mongocxx::pool& pool) {
+        const auto user = UserService::getUserById(id, pool);
         return { user.userId.to_string(), user.fullname, user.email, user.isActive};
 
     }
 
-    void inline deleteUserById(const bsoncxx::oid& id) {
-        UserService::deleteUserById(id);
+    void inline deleteUserById(const bsoncxx::oid& id, mongocxx::pool& pool) {
+        UserService::deleteUserById(id, pool);
     }
 
-    void inline updateUser(const UpdateUserRequest& dto) {
-        UserService::updateUser(static_cast<bsoncxx::oid>(dto.userId), dto.fullname, dto.email, dto.isActive);
+    void inline updateUser(const UpdateUserRequest& dto, mongocxx::pool& pool) {
+        UserService::updateUser(static_cast<bsoncxx::oid>(dto.userId), dto.fullname, dto.email, dto.isActive, pool);
     }
 
 }
