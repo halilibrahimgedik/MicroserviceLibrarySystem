@@ -3,15 +3,15 @@
 
 
 #include "book-factory.hpp"
-#include "../infrustructure/db-connection.hpp"
+#include <mongocxx/pool.hpp>
 
 using namespace std;
 
 namespace BookRepository {
 
-    Book inline getBookById(const bsoncxx::oid& id) {
-        const auto& instance = DBConnection::getInstance();
-        auto collection = instance.getCollection();
+    Book inline getBookById(const bsoncxx::oid& id, mongocxx::pool& pool) {
+        const auto client = pool.acquire();
+        auto collection = (*client)["BooksDb"]["books"];
 
         bsoncxx::builder::basic::document filter{};
         filter.append(kvp("_id", id));
@@ -21,29 +21,29 @@ namespace BookRepository {
         return BookFactory::generateBookById(result.value());
     }
 
-    Book inline createBook(const bsoncxx::builder::basic::document& document) {
-        const auto& instance = DBConnection::getInstance();
-        auto collection = instance.getCollection();
+    Book inline createBook(const bsoncxx::builder::basic::document& document, mongocxx::pool& pool) {
+        const auto client = pool.acquire();
+        auto collection = (*client)["BooksDb"]["books"];
 
         const auto result = collection.insert_one(document.view());
 
         const bsoncxx::oid id = result->inserted_id().get_oid().value;
-        return getBookById(id);
 
+        return getBookById(id, pool);
     }
 
-    vector<Book> inline getBookList() {
-        const auto& instance = DBConnection::getInstance();
-        auto collection = instance.getCollection();
+    vector<Book> inline getBookList(mongocxx::pool& pool) {
+        const auto client = pool.acquire();
+        auto collection = (*client)["BooksDb"]["books"];
 
         auto cursor = collection.find({});
 
         return BookFactory::generateBookList(cursor);
     }
 
-    void inline deleteBook(const bsoncxx::oid& id) {
-        const auto& instance = DBConnection::getInstance();
-        auto collection = instance.getCollection();
+    void inline deleteBook(const bsoncxx::oid& id, mongocxx::pool& pool) {
+        const auto client = pool.acquire();
+        auto collection = (*client)["BooksDb"]["books"];
 
         bsoncxx::builder::basic::document filter{};
         filter.append(kvp("_id", id));
@@ -51,9 +51,9 @@ namespace BookRepository {
         collection.delete_one(filter.view());
     }
 
-    void inline updateBook(const bsoncxx::oid& bookId, const string& name, const string& author) {
-        const auto& instance = DBConnection::getInstance();
-        auto collection = instance.getCollection();
+    void inline updateBook(const bsoncxx::oid& bookId, const string& name, const string& author, mongocxx::pool& pool) {
+        const auto client = pool.acquire();
+        auto collection = (*client)["BooksDb"]["books"];
 
         bsoncxx::builder::basic::document filter{};
         filter.append(kvp("_id", bookId));
@@ -70,9 +70,9 @@ namespace BookRepository {
         collection.update_one(filter.view(), updateFilter.view());
     }
 
-    bool inline any(const Book& book) {
-        const auto& instance = DBConnection::getInstance();
-        auto collection = instance.getCollection();
+    bool inline any(const Book& book, mongocxx::pool& pool) {
+        const auto client = pool.acquire();
+        auto collection = (*client)["BooksDb"]["books"];
 
         bsoncxx::builder::basic::document filter{};
         filter.append(
@@ -85,9 +85,9 @@ namespace BookRepository {
         return result.has_value();
     }
 
-    Book inline addUserToBook(const bsoncxx::oid bookId, const bsoncxx::oid& userId, const string& fullname, const string& email, const chrono::system_clock::time_point& rentedDate, const chrono::system_clock::time_point& dueDate) {
-        const auto& instance = DBConnection::getInstance();
-        auto collection = instance.getCollection();
+    Book inline addUserToBook(const bsoncxx::oid bookId, const bsoncxx::oid& userId, const string& fullname, const string& email, const chrono::system_clock::time_point& rentedDate, const chrono::system_clock::time_point& dueDate, mongocxx::pool& pool) {
+        const auto client = pool.acquire();
+        auto collection = (*client)["BooksDb"]["books"];
 
         bsoncxx::builder::basic::document filter{};
         filter.append(kvp("_id", bookId));
@@ -98,12 +98,12 @@ namespace BookRepository {
 
         collection.update_one(filter.view(), updateDocument.view());
 
-        return getBookById(book.id);;
+        return getBookById(book.id, pool);;
     }
 
-    void inline deleteUserToBooks(const bsoncxx::oid& userId) {
-        const auto& dbConnection = DBConnection::getInstance();
-        auto collection = dbConnection.getCollection();
+    void inline deleteUserToBooks(const bsoncxx::oid& userId, mongocxx::pool& pool) {
+        const auto client = pool.acquire();
+        auto collection = (*client)["BooksDb"]["books"];
 
         bsoncxx::builder::basic::document filter{};
         bsoncxx::builder::basic::document update{};
@@ -116,9 +116,9 @@ namespace BookRepository {
         collection.update_many(filter.view(), update.view());
     }
 
-    void inline updateUserToBooks(const bsoncxx::oid& userId, const string& fullname, const string& email, const chrono::system_clock::time_point& rentedDate, const chrono::system_clock::time_point& dueDate) {
-        const auto& dbConnection = DBConnection::getInstance();
-        auto collection = dbConnection.getCollection();
+    void inline updateUserToBooks(const bsoncxx::oid& userId, const string& fullname, const string& email, const chrono::system_clock::time_point& rentedDate, const chrono::system_clock::time_point& dueDate, mongocxx::pool& pool) {
+        const auto client = pool.acquire();
+        auto collection = (*client)["BooksDb"]["books"];
 
         bsoncxx::builder::basic::document filter{};
         filter.append(kvp("users._id", userId));

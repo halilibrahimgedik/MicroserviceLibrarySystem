@@ -3,9 +3,6 @@
 
 
 #include "user.hpp"
-#include "../dtos/request/user/create-user-request.hpp"
-#include "../dtos/response/user/user-by-id-response.hpp"
-#include "../dtos/response/user/user-response.hpp"
 
 using namespace std;
 using bsoncxx::builder::basic::kvp;

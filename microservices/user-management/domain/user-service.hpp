@@ -7,26 +7,26 @@
 
 namespace UserService {
 
-    CreateUserResponse inline createUser(const string& fullname, const string& email) {
+    CreateUserResponse inline createUser(const string& fullname, const string& email, mongocxx::pool& pool) {
         const bsoncxx::builder::basic::document document = UserFactory::generateUser(fullname, email);
 
-        return UserRepository::createUser(document);
+        return UserRepository::createUser(document, pool);
     }
 
-    vector<User> inline getUserList() {
-        return UserRepository::getUserList();
+    vector<User> inline getUserList(mongocxx::pool& pool) {
+        return UserRepository::getUserList(pool);
     }
 
-    User inline getUserById(const bsoncxx::oid& id) {
-        return UserRepository::getUserById(id);
+    User inline getUserById(const bsoncxx::oid& id, mongocxx::pool& pool) {
+        return UserRepository::getUserById(id, pool);
     }
 
-    void inline deleteUserById(const bsoncxx::oid& id) {
-        UserRepository::removeUserById(id);
+    void inline deleteUserById(const bsoncxx::oid& id, mongocxx::pool& pool) {
+        UserRepository::removeUserById(id, pool);
     }
 
-    void inline updateUser(const bsoncxx::oid& userId, const string& fullname, const string& email, const bool& isActive) {
-        UserRepository::updateUser(userId, fullname, email, isActive);
+    void inline updateUser(const bsoncxx::oid& userId, const string& fullname, const string& email, const bool& isActive, mongocxx::pool& pool) {
+        UserRepository::updateUser(userId, fullname, email, isActive, pool);
     }
 }
 
