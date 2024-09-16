@@ -36,7 +36,8 @@ namespace BookFactory {
                 userInfo.fullname = userData["fullname"].get_string().value;
                 userInfo.email = userData["email"].get_string().value;
                 userInfo.rentedDate = std::chrono::system_clock::time_point{std::chrono::milliseconds{userData["rentedDate"].get_date().value}};
-                userInfo.dueDate = std::chrono::system_clock::time_point{std::chrono::milliseconds{userData["dueDate"].get_date().value}};
+                userInfo.dueDate = std::chrono::system_clock::time_point{std::chrono::milliseconds{userData["dueDate"].get_date().value}},
+                userInfo.isDelivered = userData["isDelivered"].get_bool().value;
 
                 book.users.push_back(userInfo);
             }
@@ -71,13 +72,14 @@ namespace BookFactory {
         return books;
     }
 
-    bsoncxx::document::value inline generateUseInfo(const bsoncxx::oid& userId, const string& fullname, const string& email, const chrono::system_clock::time_point& rentedDate, const chrono::system_clock::time_point& dueDate) {
+    bsoncxx::document::value inline generateUserInfo(const bsoncxx::oid& userId, const string& fullname, const string& email, const chrono::system_clock::time_point& rentedDate, const chrono::system_clock::time_point& dueDate) {
         bsoncxx::builder::basic::document userInfoDocument{};
         userInfoDocument.append(kvp("_id", userId),
             kvp("fullname", fullname),
             kvp("email", email),
             kvp("rentedDate", bsoncxx::types::b_date{rentedDate}),
-            kvp("dueDate", bsoncxx::types::b_date{dueDate})
+            kvp("dueDate", bsoncxx::types::b_date{dueDate}),
+            kvp("isDelivered", false)
         );
 
         const auto updateDocument = make_document(
@@ -87,6 +89,31 @@ namespace BookFactory {
         );
 
         return updateDocument;
+    }
+
+    vector<Book> inline generateUserBookList(mongocxx::cursor& cursor) {
+        vector<Book> books;
+        for (const auto& document : cursor) {
+            Book book;
+            book.id = document["_id"].get_oid().value;
+            book.name = document["name"].get_string().value;
+            book.author = document["author"].get_string().value;
+
+            for(const auto& userDoc : document["users"].get_array().value) {
+                UserInfo userInfo;
+                // ! sadece bu bilgilere ihtiyacımız var bu kısımda
+                userInfo.rentedDate = chrono::system_clock::time_point {
+                    chrono::milliseconds{userDoc["rentedDate"].get_date().value}};
+                userInfo.dueDate = chrono::system_clock::time_point {
+                    chrono::milliseconds{userDoc["dueDate"].get_date().value}};
+                userInfo.isDelivered = userDoc["isDelivered"].get_bool().value;
+
+                book.users.push_back(move(userInfo));
+            }
+            books.push_back(move(book));
+        }
+
+        return books;
     }
 
 }

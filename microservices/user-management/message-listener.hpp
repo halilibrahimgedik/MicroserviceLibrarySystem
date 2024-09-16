@@ -64,21 +64,25 @@ namespace MessageListener {
                 adapter.ack(deliveryTag);
         });
 
-        adapter.consume("user-management.getById",
-            [&adapter, &pool](const std::string_view& body, const uint64_t deliveryTag, bool redelivered) {
-                if(MessageDto message = Utility::getMessage(body.data(),body.size()); message.serviceData.contains("userId")) {
-                    const auto client = pool.acquire();
-                    const auto user = UserApplicationService::getUserById(
-                        static_cast<bsoncxx::oid>(message.serviceData["userId"].get<string>()), client);
+        adapter.consume("user-management.getById",[&adapter, &pool](const std::string_view& body, const uint64_t deliveryTag, bool redelivered) {
+            MessageDto message = Utility::getMessage(body.data(),body.size());
+            message.statusCode = 400;
 
-                    message.responseData = user;
-                    message.serviceData.update(user);
-                    message.index += 1;
-                    message.statusCode = 200;
+            if(message.serviceData.contains("userId")) {
+                const auto client = pool.acquire();
+                const auto user = UserApplicationService::getUserById(
+                    static_cast<bsoncxx::oid>(message.serviceData["userId"].get<string>()), client);
 
-                    adapter.sendMessage(aggregator, message.to_string());
-                    adapter.ack(deliveryTag);
-                }
+                message.responseData = user;
+                message.serviceData.update(user);
+                message.statusCode = 200;
+            }
+
+            message.addError("request does not contain an userId");
+            message.index += 1;
+
+            adapter.sendMessage(aggregator, message.to_string());
+            adapter.ack(deliveryTag);
         });
 
         adapter.consume("user-management.delete",

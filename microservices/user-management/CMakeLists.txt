@@ -20,7 +20,6 @@ add_executable(user-management main.cpp
         application/user-application-service.hpp
         message-listener.hpp
         dtos/request/user/create-user-request.hpp
-        dtos/response/user/create-user-response.hpp
         ../../infrastructure/nlohmann-extensions.hpp
         dtos/response/user/user-response.hpp
         dtos/response/user/user-by-id-response.hpp

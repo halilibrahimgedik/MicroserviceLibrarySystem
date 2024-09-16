@@ -23,7 +23,7 @@ namespace UserRepository {
     optional<bsoncxx::oid> inline createUser(const bsoncxx::builder::basic::document& document, const mongocxx::pool::entry& client) {
         auto collection = (*client)["UsersDb"]["users"];
 
-        if (const auto result = collection.insert_one(document.view()); result.has_value()) {
+        if (const auto result = collection.insert_one(document.view())) {
             return result.value().inserted_id().get_oid().value;
         }
 

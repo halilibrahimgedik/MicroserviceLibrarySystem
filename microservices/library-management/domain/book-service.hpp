@@ -26,8 +26,16 @@ namespace BookService {
         BookRepository::updateBook(bookId, name, author, client);
     }
 
-    Book inline addUserToBook(const bsoncxx::oid bookId, const bsoncxx::oid& userId, const string& fullname, const string& email, const chrono::system_clock::time_point& rentedDate, const chrono::system_clock::time_point& dueDate, const mongocxx::pool::entry& client) {
-        return BookRepository::addUserToBook(bookId, userId, fullname, email, rentedDate, dueDate, client);
+    void inline rentBook(const bsoncxx::oid bookId, const bsoncxx::oid& userId, const string& fullname, const string& email, const chrono::system_clock::time_point& rentedDate, const chrono::system_clock::time_point& dueDate, const mongocxx::pool::entry& client) {
+        BookRepository::rentBook(bookId, userId, fullname, email, rentedDate, dueDate, client);
+    }
+
+    void inline deliverBook(const bsoncxx::oid& bookId, const bsoncxx::oid& userId, const mongocxx::pool::entry& client) {
+        BookRepository::deliverBook(bookId, userId, client);
+    }
+
+    vector<Book> inline getUserBookList(const bsoncxx::oid& userId, const mongocxx::pool::entry& client) {
+        return BookRepository::getUserBookList(userId, client);
     }
 
     void inline deleteUserToBooks(const bsoncxx::oid& userId, const mongocxx::pool::entry& client) {

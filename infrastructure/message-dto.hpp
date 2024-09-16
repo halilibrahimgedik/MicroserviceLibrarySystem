@@ -22,6 +22,13 @@ public:
   int statusCode{0};
 
 
+  void addError(std::string error) {
+    if (!errors.has_value()) {
+      errors = std::vector<std::string>();
+    }
+    errors->push_back(std::move(error));
+  }
+
   [[nodiscard]] std::string to_string() const {
     const nlohmann::json jsonObj = *this;
     return jsonObj.dump();

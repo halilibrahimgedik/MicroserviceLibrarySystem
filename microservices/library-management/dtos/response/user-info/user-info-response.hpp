@@ -7,18 +7,17 @@
 using namespace std;
 
 class UserInfoResponse {
-    using date = chrono::system_clock::time_point;
 public:
     UserInfoResponse() = default;
-    UserInfoResponse(string id, string fullname, string email, const date& rentedDate, const date& dueDate)
-        : userId(move(id)), fullname(move(fullname)), email(move(email)), rentedDate(rentedDate), dueDate(dueDate) {
-    }
+    UserInfoResponse(string id, string fullname, string email, string rentedDate, string dueDate, const bool& isDelivered)
+    : userId(move(id)), fullname(move(fullname)), email(move(email)), rentedDate(std::move(rentedDate)), dueDate(std::move(dueDate)), isDelivered(isDelivered) {}
 
     string userId;
     string fullname;
     string email;
-    date rentedDate;
-    date dueDate;
+    string rentedDate;
+    string dueDate;
+    bool isDelivered {false};
 
     NLOHMANN_DEFINE_TYPE_INTRUSIVE(UserInfoResponse, userId, fullname, email, rentedDate, dueDate);
 };
