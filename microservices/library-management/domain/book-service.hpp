@@ -5,37 +5,37 @@
 
 namespace BookService {
 
-    Book inline getBookById(const bsoncxx::oid& id, mongocxx::pool& pool) {
-        return BookRepository::getBookById(id, pool);
+    Book inline getBookById(const bsoncxx::oid& id, const mongocxx::pool::entry& client) {
+        return BookRepository::getBookById(id, client);
     }
 
-    vector<Book> inline getBookList(mongocxx::pool& pool) {
-        return BookRepository::getBookList(pool);
+    vector<Book> inline getBookList(const mongocxx::pool::entry& client) {
+        return BookRepository::getBookList(client);
     }
 
-    Book inline createBook(const string& name, const string& author, mongocxx::pool& pool) {
+    Book inline createBook(const string& name, const string& author, const mongocxx::pool::entry& client) {
         const auto document = BookFactory::generateBook(name, author);
-        return BookRepository::createBook(document, pool);
+        return BookRepository::createBook(document, client);
     }
 
-    void inline deleteBook(const bsoncxx::oid& id, mongocxx::pool& pool) {
-        BookRepository::deleteBook(id, pool);
+    void inline deleteBook(const bsoncxx::oid& id, const mongocxx::pool::entry& client) {
+        BookRepository::deleteBook(id, client);
     }
 
-    void inline updateBook(const bsoncxx::oid& bookId, const string& name, const string& author, mongocxx::pool& pool) {
-        BookRepository::updateBook(bookId, name, author, pool);
+    void inline updateBook(const bsoncxx::oid& bookId, const string& name, const string& author, const mongocxx::pool::entry& client) {
+        BookRepository::updateBook(bookId, name, author, client);
     }
 
-    Book inline addUserToBook(const bsoncxx::oid bookId, const bsoncxx::oid& userId, const string& fullname, const string& email, const chrono::system_clock::time_point& rentedDate, const chrono::system_clock::time_point& dueDate, mongocxx::pool& pool) {
-        return BookRepository::addUserToBook(bookId, userId, fullname, email, rentedDate, dueDate, pool);
+    Book inline addUserToBook(const bsoncxx::oid bookId, const bsoncxx::oid& userId, const string& fullname, const string& email, const chrono::system_clock::time_point& rentedDate, const chrono::system_clock::time_point& dueDate, const mongocxx::pool::entry& client) {
+        return BookRepository::addUserToBook(bookId, userId, fullname, email, rentedDate, dueDate, client);
     }
 
-    void inline deleteUserToBooks(const bsoncxx::oid& userId, mongocxx::pool& pool) {
-        BookRepository::deleteUserToBooks(userId, pool);
+    void inline deleteUserToBooks(const bsoncxx::oid& userId, const mongocxx::pool::entry& client) {
+        BookRepository::deleteUserToBooks(userId, client);
     }
 
-    void inline updateUserToBooks(const bsoncxx::oid& userId, const string& fullname, const string& email, const chrono::system_clock::time_point& rentedDate, const chrono::system_clock::time_point& dueDate, mongocxx::pool& pool) {
-        BookRepository::updateUserToBooks(userId, fullname, email, rentedDate, dueDate, pool);
+    void inline updateUserToBooks(const bsoncxx::oid& userId, const string& fullname, const string& email, const chrono::system_clock::time_point& rentedDate, const chrono::system_clock::time_point& dueDate, const mongocxx::pool::entry& client) {
+        BookRepository::updateUserToBooks(userId, fullname, email, rentedDate, dueDate, client);
     }
 
 }

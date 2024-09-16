@@ -9,8 +9,7 @@ using namespace std;
 
 namespace BookRepository {
 
-    Book inline getBookById(const bsoncxx::oid& id, mongocxx::pool& pool) {
-        const auto client = pool.acquire();
+    Book inline getBookById(const bsoncxx::oid& id, const mongocxx::pool::entry& client) {
         auto collection = (*client)["BooksDb"]["books"];
 
         bsoncxx::builder::basic::document filter{};
@@ -21,19 +20,17 @@ namespace BookRepository {
         return BookFactory::generateBookById(result.value());
     }
 
-    Book inline createBook(const bsoncxx::builder::basic::document& document, mongocxx::pool& pool) {
-        const auto client = pool.acquire();
+    Book inline createBook(const bsoncxx::builder::basic::document& document, const mongocxx::pool::entry& client) {
         auto collection = (*client)["BooksDb"]["books"];
 
         const auto result = collection.insert_one(document.view());
 
         const bsoncxx::oid id = result->inserted_id().get_oid().value;
 
-        return getBookById(id, pool);
+        return getBookById(id, client);
     }
 
-    vector<Book> inline getBookList(mongocxx::pool& pool) {
-        const auto client = pool.acquire();
+    vector<Book> inline getBookList(const mongocxx::pool::entry& client) {
         auto collection = (*client)["BooksDb"]["books"];
 
         auto cursor = collection.find({});
@@ -41,8 +38,7 @@ namespace BookRepository {
         return BookFactory::generateBookList(cursor);
     }
 
-    void inline deleteBook(const bsoncxx::oid& id, mongocxx::pool& pool) {
-        const auto client = pool.acquire();
+    void inline deleteBook(const bsoncxx::oid& id, const mongocxx::pool::entry& client) {
         auto collection = (*client)["BooksDb"]["books"];
 
         bsoncxx::builder::basic::document filter{};
@@ -51,8 +47,7 @@ namespace BookRepository {
         collection.delete_one(filter.view());
     }
 
-    void inline updateBook(const bsoncxx::oid& bookId, const string& name, const string& author, mongocxx::pool& pool) {
-        const auto client = pool.acquire();
+    void inline updateBook(const bsoncxx::oid& bookId, const string& name, const string& author, const mongocxx::pool::entry& client) {
         auto collection = (*client)["BooksDb"]["books"];
 
         bsoncxx::builder::basic::document filter{};
@@ -70,8 +65,7 @@ namespace BookRepository {
         collection.update_one(filter.view(), updateFilter.view());
     }
 
-    bool inline any(const Book& book, mongocxx::pool& pool) {
-        const auto client = pool.acquire();
+    bool inline any(const Book& book, const mongocxx::pool::entry& client) {
         auto collection = (*client)["BooksDb"]["books"];
 
         bsoncxx::builder::basic::document filter{};
@@ -85,8 +79,7 @@ namespace BookRepository {
         return result.has_value();
     }
 
-    Book inline addUserToBook(const bsoncxx::oid bookId, const bsoncxx::oid& userId, const string& fullname, const string& email, const chrono::system_clock::time_point& rentedDate, const chrono::system_clock::time_point& dueDate, mongocxx::pool& pool) {
-        const auto client = pool.acquire();
+    Book inline addUserToBook(const bsoncxx::oid bookId, const bsoncxx::oid& userId, const string& fullname, const string& email, const chrono::system_clock::time_point& rentedDate, const chrono::system_clock::time_point& dueDate, const mongocxx::pool::entry& client) {
         auto collection = (*client)["BooksDb"]["books"];
 
         bsoncxx::builder::basic::document filter{};
@@ -98,11 +91,10 @@ namespace BookRepository {
 
         collection.update_one(filter.view(), updateDocument.view());
 
-        return getBookById(book.id, pool);;
+        return getBookById(book.id, client);;
     }
 
-    void inline deleteUserToBooks(const bsoncxx::oid& userId, mongocxx::pool& pool) {
-        const auto client = pool.acquire();
+    void inline deleteUserToBooks(const bsoncxx::oid& userId, const mongocxx::pool::entry& client) {
         auto collection = (*client)["BooksDb"]["books"];
 
         bsoncxx::builder::basic::document filter{};
@@ -116,8 +108,8 @@ namespace BookRepository {
         collection.update_many(filter.view(), update.view());
     }
 
-    void inline updateUserToBooks(const bsoncxx::oid& userId, const string& fullname, const string& email, const chrono::system_clock::time_point& rentedDate, const chrono::system_clock::time_point& dueDate, mongocxx::pool& pool) {
-        const auto client = pool.acquire();
+    void inline updateUserToBooks(const bsoncxx::oid& userId, const string& fullname, const string& email, const chrono::system_clock::time_point& rentedDate, const chrono::system_clock::time_point& dueDate, const mongocxx::pool::entry& client) {
+
         auto collection = (*client)["BooksDb"]["books"];
 
         bsoncxx::builder::basic::document filter{};

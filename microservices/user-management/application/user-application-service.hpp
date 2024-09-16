@@ -9,12 +9,12 @@
 
 namespace UserApplicationService {
 
-    CreateUserResponse inline createUser(const CreateUserRequest& createUser, mongocxx::pool& pool) {
-        return UserService::createUser(createUser.fullname, createUser.email, pool);
+    optional<bsoncxx::oid> inline createUser(const CreateUserRequest& createUser, const mongocxx::pool::entry& client) {
+        return UserService::createUser(createUser.fullname, createUser.email, client);
     }
 
-    UserListResponse inline getUserList(mongocxx::pool& pool) {
-        const auto users = UserService::getUserList(pool);
+    UserListResponse inline getUserList(const mongocxx::pool::entry& client) {
+        const auto users = UserService::getUserList(client);
 
         UserListResponse userList;
         for(const auto& user : users) {
@@ -25,18 +25,17 @@ namespace UserApplicationService {
         return userList;
     }
 
-    UserByIdResponse inline getUserById(const bsoncxx::oid& id, mongocxx::pool& pool) {
-        const auto user = UserService::getUserById(id, pool);
+    UserByIdResponse inline getUserById(const bsoncxx::oid& id, const mongocxx::pool::entry& client) {
+        const auto user = UserService::getUserById(id, client);
         return { user.userId.to_string(), user.fullname, user.email, user.isActive};
-
     }
 
-    void inline deleteUserById(const bsoncxx::oid& id, mongocxx::pool& pool) {
-        UserService::deleteUserById(id, pool);
+    void inline deleteUserById(const bsoncxx::oid& id, const mongocxx::pool::entry& client) {
+        UserService::deleteUserById(id, client);
     }
 
-    void inline updateUser(const UpdateUserRequest& dto, mongocxx::pool& pool) {
-        UserService::updateUser(static_cast<bsoncxx::oid>(dto.userId), dto.fullname, dto.email, dto.isActive, pool);
+    void inline updateUser(const UpdateUserRequest& dto, const mongocxx::pool::entry& client) {
+        UserService::updateUser(static_cast<bsoncxx::oid>(dto.userId), dto.fullname, dto.email, dto.isActive, client);
     }
 
 }

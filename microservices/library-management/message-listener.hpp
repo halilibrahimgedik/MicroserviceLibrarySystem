@@ -29,9 +29,9 @@ namespace MessageListener {
         adapter.consume("library-management.insert", [&adapter, &pool](const std::string_view &body, const uint64_t deliveryTag, const bool redelivered) {
             MessageDto message = Utility::getMessage(body.data(), body.size());
 
-            const CreateBookRequest book { message.serviceData["name"].get<string>(),
-                                            message.serviceData["author"].get<string>()};
-            const auto result = BookApplicationService::createBook(book, pool);
+            const CreateBookRequest book{message.serviceData["name"].get<string>(),message.serviceData["author"].get<string>()};
+            const auto client = pool.acquire();
+            const auto result = BookApplicationService::createBook(book, client);
 
             message.responseData = result;
             message.index += 1;
@@ -44,7 +44,8 @@ namespace MessageListener {
         adapter.consume("library-management.getList", [&adapter, &pool](const std::string_view &body, const uint64_t deliveryTag, const bool redelivered) {
             MessageDto message = Utility::getMessage(body.data(), body.size());
 
-            const auto bookList = BookApplicationService::getBookList(pool);
+            const auto client = pool.acquire();
+            const auto bookList = BookApplicationService::getBookList(client);
             message.responseData = bookList;
             message.index += 1;
             message.statusCode = 200;
@@ -55,7 +56,8 @@ namespace MessageListener {
 
         adapter.consume("library-management.getById", [&adapter, &pool](const std::string_view &body, const uint64_t deliveryTag, const bool redelivered) {
             if(MessageDto message = Utility::getMessage(body.data(), body.size()); !message.serviceData["bookId"].get<string>().empty()) {
-                const auto book = BookApplicationService::getBookById(static_cast<bsoncxx::oid>(message.serviceData["bookId"].get<string>()), pool);
+                const auto client = pool.acquire();
+                const auto book = BookApplicationService::getBookById(static_cast<bsoncxx::oid>(message.serviceData["bookId"].get<string>()), client);
 
                 message.responseData = book;
                 message.index += 1;
@@ -68,7 +70,8 @@ namespace MessageListener {
 
         adapter.consume("library-management.delete", [&adapter, &pool](const std::string_view &body, const uint64_t deliveryTag, const bool redelivered) {
             if(MessageDto message = Utility::getMessage(body.data(), body.size()); !message.serviceData["id"].get<string>().empty()) {
-                BookApplicationService::deleteBook(static_cast<bsoncxx::oid>(message.serviceData["id"].get<string>()), pool);
+                const auto client = pool.acquire();
+                BookApplicationService::deleteBook(static_cast<bsoncxx::oid>(message.serviceData["id"].get<string>()), client);
 
                 message.index += 1;
                 message.statusCode = 204;
@@ -85,7 +88,8 @@ namespace MessageListener {
                                     message.serviceData["name"].get<string>(),
                                     message.serviceData["author"].get<string>()};
 
-            BookApplicationService::updateBook(book, pool);
+            const auto client = pool.acquire();
+            BookApplicationService::updateBook(book, client);
             message.index += 1;
             message.statusCode = 204;
 
@@ -100,6 +104,7 @@ namespace MessageListener {
             userInfo.rentedDate = chrono::system_clock::now();
             userInfo.dueDate = chrono::system_clock::now();
 
+            const auto client = pool.acquire();
             const auto result = BookApplicationService::addUserToBook(
                 static_cast<bsoncxx::oid>(message.serviceData["bookId"].get<string>()),
                 static_cast<bsoncxx::oid>(userInfo.userId),
@@ -107,7 +112,7 @@ namespace MessageListener {
                 userInfo.email,
                 userInfo.rentedDate,
                 userInfo.dueDate,
-                pool
+                client
             );
 
             message.responseData = result;
@@ -121,7 +126,8 @@ namespace MessageListener {
         adapter.consume("library-management.deleteUserToBooks",[&adapter, &pool](const std::string_view &body, const uint64_t deliveryTag, const bool redelivered) {
             MessageDto message = Utility::getMessage(body.data(), body.size());
 
-            BookApplicationService::deleteUserToBook(static_cast<bsoncxx::oid>(message.serviceData["userId"].get<string>()), pool);
+            const auto client = pool.acquire();
+            BookApplicationService::deleteUserToBook(static_cast<bsoncxx::oid>(message.serviceData["userId"].get<string>()), client);
 
             message.index += 1;
             message.statusCode = 204;
@@ -135,7 +141,8 @@ namespace MessageListener {
 
             const auto userInfo = message.serviceData.get<UserInfoRequest>();
 
-            BookApplicationService::updateUserToBooks(userInfo, pool);
+            const auto client = pool.acquire();
+            BookApplicationService::updateUserToBooks(userInfo, client);
 
             message.index += 1;
             message.statusCode = 204;

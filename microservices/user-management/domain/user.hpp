@@ -9,6 +9,7 @@ using namespace std;
 class User {
 public:
     User() = default;
+    explicit User(const bsoncxx::oid& userId) : userId(userId){};
     User(string  fullname, string email, const bool& isActive = true)
         : userId(userId), fullname(move(fullname)), email(move(email)), isActive(isActive){}
     User(const bsoncxx::oid userId ,string  fullname, string email, const bool& isActive = true)

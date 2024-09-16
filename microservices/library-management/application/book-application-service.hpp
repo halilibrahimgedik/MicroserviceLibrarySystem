@@ -13,8 +13,8 @@
 
 namespace BookApplicationService {
 
-    BookByIdResponse inline getBookById(const bsoncxx::oid& id, mongocxx::pool& pool) {
-        const auto book = BookService::getBookById(id, pool);
+    BookByIdResponse inline getBookById(const bsoncxx::oid& id, const mongocxx::pool::entry& client) {
+        const auto book = BookService::getBookById(id, client);
 
         std::vector<UserInfoResponse> userInfoResponse;
         for (const auto& user : book.users) {
@@ -24,8 +24,8 @@ namespace BookApplicationService {
       return  {book.id.to_string(), book.name, book.author, userInfoResponse};
     }
 
-    BookListResponse inline getBookList(mongocxx::pool& pool) {
-        const auto books = BookService::getBookList(pool);
+    BookListResponse inline getBookList(const mongocxx::pool::entry& client) {
+        const auto books = BookService::getBookList(client);
 
         BookListResponse bookList;
         for (const auto& book : books) {
@@ -44,22 +44,22 @@ namespace BookApplicationService {
         return bookList;
     }
 
-    CreateBookResponse inline createBook(const CreateBookRequest& dto, mongocxx::pool& pool) {
-        const auto book = BookService::createBook(dto.name,dto.author,pool);
+    CreateBookResponse inline createBook(const CreateBookRequest& dto, const mongocxx::pool::entry& client) {
+        const auto book = BookService::createBook(dto.name,dto.author,client);
         return {book.id.to_string(), book.name, book.author};
     }
 
-    void inline deleteBook(const bsoncxx::oid& id, mongocxx::pool& pool) {
-        BookService::deleteBook(id, pool);
+    void inline deleteBook(const bsoncxx::oid& id, const mongocxx::pool::entry& client) {
+        BookService::deleteBook(id, client);
     }
 
-    void inline updateBook(const UpdateBookRequest& book, mongocxx::pool& pool) {
-        BookService::updateBook(static_cast<bsoncxx::oid>(book.bookId), book.name, book.author, pool);
+    void inline updateBook(const UpdateBookRequest& book, const mongocxx::pool::entry& client) {
+        BookService::updateBook(static_cast<bsoncxx::oid>(book.bookId), book.name, book.author, client);
     }
 
-    BookResponse inline addUserToBook(const bsoncxx::oid bookId, const bsoncxx::oid& userId, const string& fullname, const string& email, const chrono::system_clock::time_point& rentedDate, const chrono::system_clock::time_point& dueDate, mongocxx::pool& pool) {
+    BookResponse inline addUserToBook(const bsoncxx::oid bookId, const bsoncxx::oid& userId, const string& fullname, const string& email, const chrono::system_clock::time_point& rentedDate, const chrono::system_clock::time_point& dueDate, const mongocxx::pool::entry& client) {
 
-        const auto book = BookService::addUserToBook(bookId, userId, fullname, email, rentedDate, dueDate, pool);
+        const auto book = BookService::addUserToBook(bookId, userId, fullname, email, rentedDate, dueDate, client);
 
         std::vector<UserInfoResponse> userInfoResponse;
         for (const auto& user : book.users) {
@@ -69,33 +69,12 @@ namespace BookApplicationService {
         return {book.id.to_string(), book.name, book.author, userInfoResponse};
     }
 
-    void inline deleteUserToBook(const bsoncxx::oid& userId, mongocxx::pool& pool) {
-        BookService::deleteUserToBooks(userId, pool);
+    void inline deleteUserToBook(const bsoncxx::oid& userId, const mongocxx::pool::entry& client) {
+        BookService::deleteUserToBooks(userId, client);
     }
 
-    void inline updateUserToBooks(const UserInfoRequest& userInfo, mongocxx::pool& pool) {
-        BookService::updateUserToBooks(static_cast<bsoncxx::oid>(userInfo.userId), userInfo.fullname, userInfo.email, userInfo.rentedDate, userInfo.dueDate, pool);
+    void inline updateUserToBooks(const UserInfoRequest& userInfo, const mongocxx::pool::entry& client) {
+        BookService::updateUserToBooks(static_cast<bsoncxx::oid>(userInfo.userId), userInfo.fullname, userInfo.email, userInfo.rentedDate, userInfo.dueDate, client);
     }
 }
-
-
-// vector<BookResponse> inline getBookList(mongocxx::pool& pool) {
-//     const auto books = BookService::getBookList(pool);
-//
-//     vector<BookResponse> bookList;
-//     for (const auto& book : books) {
-//         BookResponse bookResponse {book.id.to_string(), book.name, book.author};
-//
-//         vector<UserInfoResponse> users;
-//         for(const auto& user : book.users) {
-//             UserInfoResponse userInfoResponse {user.userId.to_string(), user.fullname, user.email, user.rentedDate, user.dueDate};
-//             users.push_back(move(userInfoResponse));
-//         }
-//
-//         bookResponse.users = users;
-//         bookList.push_back(move(bookResponse));
-//     }
-//
-//     return bookList;
-// }
 #endif //BOOK_APPLICATION_SERVICE_HPP

@@ -5,13 +5,11 @@
 #include <mongocxx/pool.hpp>
 
 #include "user-factory.hpp"
-#include "../dtos/response/user/create-user-response.hpp"
 
 using namespace std;
 namespace UserRepository {
 
-    User inline getUserById(const bsoncxx::oid& id, mongocxx::pool& pool) {
-        const auto client = pool.acquire();
+    User inline getUserById(const bsoncxx::oid& id, const mongocxx::pool::entry& client) {
         auto collection = (*client)["UsersDb"]["users"];
 
         bsoncxx::builder::basic::document filter{};
@@ -22,24 +20,17 @@ namespace UserRepository {
         return UserFactory::generateUserById(result.value());
     }
 
-    CreateUserResponse inline createUser(const bsoncxx::builder::basic::document& document, mongocxx::pool& pool) {
-        const auto client = pool.acquire();
+    optional<bsoncxx::oid> inline createUser(const bsoncxx::builder::basic::document& document, const mongocxx::pool::entry& client) {
         auto collection = (*client)["UsersDb"]["users"];
 
-        if (const auto result = collection.insert_one(document.view())) {
-            return CreateUserResponse {
-                result.value().inserted_id().get_oid().value.to_string(),
-                std::string(document.view()["fullname"].get_string().value),
-                std::string(document.view()["email"].get_string().value),
-                document.view()["isActive"].get_bool().value,
-            };
+        if (const auto result = collection.insert_one(document.view()); result.has_value()) {
+            return result.value().inserted_id().get_oid().value;
         }
 
-        throw runtime_error("Could not create user");
+        return nullopt;
     }
 
-    vector<User> inline getUserList(mongocxx::pool& pool) {
-        const auto client = pool.acquire();
+    vector<User> inline getUserList(const mongocxx::pool::entry& client) {
         auto collection = (*client)["UsersDb"]["users"];
 
         auto cursor = collection.find({});
@@ -47,8 +38,7 @@ namespace UserRepository {
         return UserFactory::generateUserList(cursor);
     }
 
-    void inline removeUserById(const bsoncxx::oid& id, mongocxx::pool& pool) {
-        const auto client = pool.acquire();
+    void inline removeUserById(const bsoncxx::oid& id, const mongocxx::pool::entry& client) {
         auto collection = (*client)["UsersDb"]["users"];
 
         bsoncxx::builder::basic::document filter{};
@@ -60,8 +50,7 @@ namespace UserRepository {
         collection.update_one(filter.view(), update.view());
     }
 
-    void inline updateUser(const bsoncxx::oid& userId, const string& fullname, const string& email, const bool& isActive, mongocxx::pool& pool) {
-        const auto client = pool.acquire();
+    void inline updateUser(const bsoncxx::oid& userId, const string& fullname, const string& email, const bool& isActive, const mongocxx::pool::entry& client) {
         auto collection = (*client)["UsersDb"]["users"];
 
         bsoncxx::builder::basic::document filter{};

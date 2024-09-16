@@ -8,8 +8,9 @@
 class CreateUserResponse {
 public:
     CreateUserResponse() = default;
-    CreateUserResponse( string userId, std::string fullname, std::string email, const bool& isActive)
-    : userId(move(userId)), fullname(std::move(fullname)), email(std::move(email)), isActive(isActive) {}
+    explicit CreateUserResponse(std::string userId) : userId(move(userId)) {};
+    // CreateUserResponse( string userId, std::string fullname, std::string email, const bool& isActive)
+    // : userId(move(userId)), fullname(std::move(fullname)), email(std::move(email)), isActive(isActive) {}
 
     std::string userId;
     std::string fullname;
