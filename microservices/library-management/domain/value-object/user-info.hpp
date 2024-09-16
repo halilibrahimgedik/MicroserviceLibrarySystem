@@ -4,7 +4,6 @@
 #include <mongocxx/client.hpp>
 #include <nlohmann/json.hpp>
 
-#include "../../../../infrastructure/utility.hpp"
 
 using namespace std;
 using json = nlohmann::json;
@@ -15,16 +14,18 @@ class UserInfo {
 public:
     UserInfo() = default;
 
-    UserInfo(const bsoncxx::oid id, string fullname, string email, const date &rentedDate, const date &dueDate)
-        : userId(id), fullname(move(fullname)), email(move(email)), rentedDate(rentedDate), dueDate(dueDate) {
-    }
+    UserInfo(const bsoncxx::oid& id, string fullname, string email, const date &rentedDate, const date &dueDate,
+        const bool& isDelivered)
+    :
+    userId(id), fullname(move(fullname)), email(move(email)), rentedDate(rentedDate), dueDate(dueDate),
+        isDelivered(isDelivered) {}
 
     bsoncxx::oid userId;
     string fullname;
     string email;
     date rentedDate;
     date dueDate;
-
+    bool isDelivered {false};
 };
 
 

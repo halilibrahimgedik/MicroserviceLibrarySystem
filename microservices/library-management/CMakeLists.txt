@@ -19,12 +19,13 @@ add_executable(library-management main.cpp
         message-listener.hpp
         dtos/request/book/create-book-request.hpp
         dtos/response/book/create-book-response.hpp
-        dtos/response/book/book-response.hpp
         dtos/response/user-info/user-info-response.hpp
         dtos/response/book/book-by-id-response.hpp
         dtos/request/book/update-book-request.hpp
         dtos/request/user-info/user-info-request.hpp
         dtos/response/book/book-list-response.hpp
+        dtos/response/book/deliver-book-request.hpp
+        dtos/response/book/user-book-list-response.hpp
 )
 
 target_link_libraries(library-management PRIVATE

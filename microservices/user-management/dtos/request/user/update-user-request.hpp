@@ -3,7 +3,6 @@
 
 
 #include <string>
-#include "../../../../../infrastructure/nlohmann-extensions.hpp"
 
 class UpdateUserRequest {
 public:

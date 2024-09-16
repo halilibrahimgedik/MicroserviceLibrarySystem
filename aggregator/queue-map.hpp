@@ -22,7 +22,9 @@ namespace QueueMap {
         {"library-management.update", ActionInfo{{"library-management.update"}}},
         {"library-management.delete", ActionInfo{{"library-management.delete"}}},
         {"library-management.getById", ActionInfo{{"library-management.getById"}}},
-        {"library-management.addUserToBook", ActionInfo{{"user-management.getById", "library-management.addUserToBook"}} },
+        {"library-management.rentBook", ActionInfo{{"user-management.getById", "library-management.rentBook"}}},
+        {"library-management.deliverBook", ActionInfo{{"library-management.deliverBook"}}},
+        {"library-management.getUserBookList", ActionInfo{{"library-management.getUserBookList"}}},
     };
 }
 

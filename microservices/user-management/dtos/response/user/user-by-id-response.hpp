@@ -2,7 +2,6 @@
 #define RESULT_USER_BY_ID_RESPONSE_DTO_HPP
 
 #include <string>
-#include "../../../../../infrastructure/nlohmann-extensions.hpp"
 
 class UserByIdResponse {
 public:
