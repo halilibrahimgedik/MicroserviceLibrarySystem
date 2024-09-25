@@ -16,6 +16,7 @@ add_executable(api-gateway main.cpp
         ../infrastructure/utility.hpp
         ../libs/libcpp-event-hub/src/libcpp-event-hub.hpp
         http-listener.hpp
+        middlewares/cors.hpp
 )
 
 target_link_libraries(api-gateway PRIVATE

@@ -3,6 +3,8 @@
 
 
 #include <crow.h>
+#include "crow/middlewares/cors.h"
+
 #include <nlohmann/json.hpp>
 #include <thread>
 #include <chrono>
@@ -64,8 +66,20 @@ namespace HttpListener {
         return {statusCode, resultJson.dump()};
     }
 
+    void inline configureCors(crow::App<crow::CORSHandler>& app) {
+        auto& cors = app.get_middleware<crow::CORSHandler>();
+        cors
+            .global()
+            .headers("Content-Type", "Authorization", "action")  // 'action' başlığını ekleyin
+            .methods("POST"_method, "GET"_method)                // İzin verilen HTTP yöntemleri
+            .origin("http://localhost:4200");                   // İzin verilen kaynak (eğik çizgi olmadan)
+    }
+
     void inline startApi(RabbitMQAdapter& adapter) {
-        crow::SimpleApp app;
+        crow::App<crow::CORSHandler> app;
+
+        // CORS settings
+        configureCors(app);
 
         CROW_ROUTE(app, "/").methods(crow::HTTPMethod::Post)([&adapter](const crow::request &request) {
             const auto action = request.get_header_value("action");
