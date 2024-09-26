@@ -1,25 +1,17 @@
 #ifndef BOOK_BY_ID_RESPONSE_HPP
 #define BOOK_BY_ID_RESPONSE_HPP
 
-#include <string>
-#include <vector>
-#include "../user-info/user-info-response.hpp"
-
-using namespace std;
-
 class BookByIdResponse {
 public:
     BookByIdResponse() = default;
-    BookByIdResponse( string bookId, string bookName, string bookAuthor, const vector<UserInfoResponse>& users = {})
-     : bookId(move(bookId)), name(std::move(bookName)), author(std::move(bookAuthor)), users(users) {};
+    BookByIdResponse(std::string bookId, std::string bookName, std::string bookAuthor)
+         : bookId(std::move(bookId)), name(std::move(bookName)), author(std::move(bookAuthor)) {};
 
-    string bookId;
-    string name;
-    string author;
-    vector<UserInfoResponse> users;
+    std::string bookId;
+    std::string name;
+    std::string author;
 
-    NLOHMANN_DEFINE_TYPE_INTRUSIVE(BookByIdResponse, bookId, name, author, users);
+    NLOHMANN_DEFINE_TYPE_INTRUSIVE(BookByIdResponse, bookId, name, author);
 };
-
 
 #endif //BOOK_BY_ID_RESPONSE_HPP

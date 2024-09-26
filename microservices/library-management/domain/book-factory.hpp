@@ -24,6 +24,15 @@ namespace BookFactory {
 
     Book inline generateBookById(const bsoncxx::document::value& docValue) {
         Book book;
+        book.id = docValue["_id"].get_oid().value;
+        book.name = docValue["name"].get_string().value;
+        book.author = docValue["author"].get_string().value;
+
+        return book;
+    }
+
+    Book inline generateBookByIdWithUsers(const bsoncxx::document::value& docValue) {
+        Book book;
 
         book.id = docValue["_id"].get_oid().value;
         book.name = docValue["name"].get_string().value;
@@ -55,18 +64,7 @@ namespace BookFactory {
             book.name = document["name"].get_string().value;
             book.author = document["author"].get_string().value;
 
-            for (const auto& userDoc : document["users"].get_array().value) {
-                UserInfo userInfo;
-                userInfo.userId = userDoc["_id"].get_oid().value;
-                userInfo.fullname = userDoc["fullname"].get_string().value;
-                userInfo.email = userDoc["email"].get_string().value;
-                userInfo.rentedDate = chrono::system_clock::time_point{std::chrono::milliseconds{userDoc["rentedDate"].get_date().value}};
-                userInfo.dueDate = chrono::system_clock::time_point{std::chrono::milliseconds{userDoc["dueDate"].get_date().value}};
-
-                book.users.push_back(move(userInfo));
-            }
-
-            books.push_back(move(book));
+            books.push_back(std::move(book));
         }
 
         return books;
@@ -89,6 +87,32 @@ namespace BookFactory {
         );
 
         return updateDocument;
+    }
+
+    vector<Book> inline generateBooksWithUsers(mongocxx::cursor& cursor) {
+        vector<Book> books;
+
+        for (const auto& document : cursor) {
+            Book book;
+            book.id = document["_id"].get_oid().value;
+            book.name = document["name"].get_string().value;
+            book.author = document["author"].get_string().value;
+
+            for (const auto& userDoc : document["users"].get_array().value) {
+                UserInfo userInfo;
+                userInfo.userId = userDoc["_id"].get_oid().value;
+                userInfo.fullname = userDoc["fullname"].get_string().value;
+                userInfo.email = userDoc["email"].get_string().value;
+                userInfo.rentedDate = chrono::system_clock::time_point{std::chrono::milliseconds{userDoc["rentedDate"].get_date().value}};
+                userInfo.dueDate = chrono::system_clock::time_point{std::chrono::milliseconds{userDoc["dueDate"].get_date().value}};
+
+                book.users.push_back(move(userInfo));
+            }
+
+            books.push_back(move(book));
+        }
+
+        return books;
     }
 
     vector<Book> inline generateUserBookList(mongocxx::cursor& cursor) {

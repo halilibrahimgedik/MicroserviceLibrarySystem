@@ -38,23 +38,36 @@ namespace MessageListener {
         });
 
         adapter.consume("library-management.getList", [&adapter, &pool](const std::string_view &body, const uint64_t deliveryTag, const bool redelivered) {
-            MessageDto message = Utility::getMessage(body.data(), body.size());
+          MessageDto message = Utility::getMessage(body.data(), body.size());
 
-            const auto client = pool.acquire();
+          const auto client = pool.acquire();
 
-            message.responseData = BookApplicationService::getBookList(client);
-            message.index += 1;
-            message.statusCode = 200;
+          message.responseData = BookApplicationService::getBookList(client);
+          message.index += 1;
+          message.statusCode = 200;
 
-            adapter.sendMessage(aggregator, message.to_string());
-            adapter.ack(deliveryTag);
-        });
+          adapter.sendMessage(aggregator, message.to_string());
+          adapter.ack(deliveryTag);
+      });
 
         adapter.consume("library-management.getById", [&adapter, &pool](const std::string_view &body, const uint64_t deliveryTag, const bool redelivered) {
             if(MessageDto message = Utility::getMessage(body.data(), body.size()); !message.serviceData["bookId"].get<string>().empty()) {
                 const auto client = pool.acquire();
 
                 message.responseData = BookApplicationService::getBookById(static_cast<bsoncxx::oid>(message.serviceData["bookId"].get<string>()), client);
+                message.index += 1;
+                message.statusCode = 200;
+
+                adapter.sendMessage(aggregator, message.to_string());
+                adapter.ack(deliveryTag);
+            }
+        });
+
+        adapter.consume("library-management.getByIdWithUsers", [&adapter, &pool](const std::string_view &body, const uint64_t deliveryTag, const bool redelivered) {
+            if(MessageDto message = Utility::getMessage(body.data(), body.size()); !message.serviceData["bookId"].get<string>().empty()) {
+                const auto client = pool.acquire();
+
+                message.responseData = BookApplicationService::getBookByIdWithUsers(static_cast<bsoncxx::oid>(message.serviceData["bookId"].get<string>()), client);
                 message.index += 1;
                 message.statusCode = 200;
 
@@ -91,6 +104,20 @@ namespace MessageListener {
             adapter.sendMessage(aggregator, message.to_string());
             adapter.ack(deliveryTag);
         });
+
+
+        adapter.consume("library-management.getBooksWithUsers", [&adapter, &pool](const std::string_view &body, const uint64_t deliveryTag, const bool redelivered) {
+           MessageDto message = Utility::getMessage(body.data(), body.size());
+
+           const auto client = pool.acquire();
+
+           message.responseData = BookApplicationService::getBooksWithUsers(client);
+           message.index += 1;
+           message.statusCode = 200;
+
+           adapter.sendMessage(aggregator, message.to_string());
+           adapter.ack(deliveryTag);
+       });
 
         adapter.consume("library-management.rentBook",[&adapter, &pool](const std::string_view &body, const uint64_t deliveryTag, const bool redelivered) {
             MessageDto message = Utility::getMessage(body.data(), body.size());

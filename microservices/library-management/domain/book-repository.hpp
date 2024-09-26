@@ -20,6 +20,17 @@ namespace BookRepository {
         return BookFactory::generateBookById(result.value());
     }
 
+    Book inline getBookByIdWithUsers(const bsoncxx::oid& id, const mongocxx::pool::entry& client) {
+        auto collection = (*client)["BooksDb"]["books"];
+
+        bsoncxx::builder::basic::document filter{};
+        filter.append(kvp("_id", id));
+
+        const auto result = collection.find_one(filter.view());
+
+        return BookFactory::generateBookByIdWithUsers(result.value());
+    }
+
     Book inline createBook(const bsoncxx::builder::basic::document& document, const mongocxx::pool::entry& client) {
         auto collection = (*client)["BooksDb"]["books"];
 
@@ -34,7 +45,6 @@ namespace BookRepository {
         auto collection = (*client)["BooksDb"]["books"];
 
         auto cursor = collection.find({});
-
         return BookFactory::generateBookList(cursor);
     }
 
@@ -77,6 +87,15 @@ namespace BookRepository {
         const auto result = collection.find_one(filter.view());
 
         return result.has_value();
+    }
+
+
+    vector<Book> inline getBooksWithUsers(const mongocxx::pool::entry& client) {
+        auto collection = (*client)["BooksDb"]["books"];
+
+        auto cursor = collection.find({});
+
+        return BookFactory::generateBooksWithUsers(cursor);
     }
 
     void inline rentBook(const bsoncxx::oid bookId, const bsoncxx::oid& userId, const string& fullname, const string& email, const chrono::system_clock::time_point& rentedDate, const chrono::system_clock::time_point& dueDate, const mongocxx::pool::entry& client) {

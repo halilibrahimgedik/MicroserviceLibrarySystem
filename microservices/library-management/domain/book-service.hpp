@@ -9,13 +9,17 @@ namespace BookService {
         return BookRepository::getBookById(id, client);
     }
 
-    vector<Book> inline getBookList(const mongocxx::pool::entry& client) {
-        return BookRepository::getBookList(client);
+    Book inline getBookByIdWithUsers(const bsoncxx::oid& id, const mongocxx::pool::entry& client) {
+        return BookRepository::getBookByIdWithUsers(id, client);
     }
 
     Book inline createBook(const string& name, const string& author, const mongocxx::pool::entry& client) {
         const auto document = BookFactory::generateBook(name, author);
         return BookRepository::createBook(document, client);
+    }
+
+    vector<Book> inline getBookList(const mongocxx::pool::entry& client) {
+        return BookRepository::getBookList(client);
     }
 
     void inline deleteBook(const bsoncxx::oid& id, const mongocxx::pool::entry& client) {
@@ -24,6 +28,10 @@ namespace BookService {
 
     void inline updateBook(const bsoncxx::oid& bookId, const string& name, const string& author, const mongocxx::pool::entry& client) {
         BookRepository::updateBook(bookId, name, author, client);
+    }
+
+    vector<Book> inline getBooksWithUsers(const mongocxx::pool::entry& client) {
+        return BookRepository::getBooksWithUsers(client);
     }
 
     void inline rentBook(const bsoncxx::oid bookId, const bsoncxx::oid& userId, const string& fullname, const string& email, const chrono::system_clock::time_point& rentedDate, const chrono::system_clock::time_point& dueDate, const mongocxx::pool::entry& client) {

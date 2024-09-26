@@ -1,7 +1,7 @@
 #ifndef BOOK_LIST_RESPONSE_HPP
 #define BOOK_LIST_RESPONSE_HPP
 
-#include <vector>
+#include <string>
 
 class BookListResponse {
 public:
@@ -9,18 +9,17 @@ public:
 
     struct BookResponse {
         BookResponse() = default;
-        BookResponse( string bookId, string bookName, string bookAuthor, const vector<UserInfoResponse>& users = {})
-         : bookId(move(bookId)), name(std::move(bookName)), author(std::move(bookAuthor)), users(users) {};
+        BookResponse( std::string bookId, std::string bookName, std::string bookAuthor)
+         : bookId(std::move(bookId)), name(std::move(bookName)), author(std::move(bookAuthor)) {};
 
-        string bookId;
-        string name;
-        string author;
-        vector<UserInfoResponse> users;
+        std::string bookId;
+        std::string name;
+        std::string author;
 
-        NLOHMANN_DEFINE_TYPE_INTRUSIVE(BookResponse, bookId, name, author, users);
+        NLOHMANN_DEFINE_TYPE_INTRUSIVE(BookResponse, bookId, name, author);
     };
 
-    vector<BookResponse> books;
+    std::vector<BookResponse> books;
 
     NLOHMANN_DEFINE_TYPE_INTRUSIVE(BookListResponse, books);
 };

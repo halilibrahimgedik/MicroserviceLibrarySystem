@@ -17,11 +17,15 @@ namespace QueueMap {
         {"user-management.delete", ActionInfo{{"user-management.delete", "library-management.deleteUserToBooks"}}},
         {"user-management.getById", ActionInfo{{"user-management.getById"}}},
 
+
         {"library-management.getList", ActionInfo{{"library-management.getList"}}},
         {"library-management.insert", ActionInfo{{"library-management.insert"}}},
         {"library-management.update", ActionInfo{{"library-management.update"}}},
         {"library-management.delete", ActionInfo{{"library-management.delete"}}},
         {"library-management.getById", ActionInfo{{"library-management.getById"}}},
+        {"library-management.getByIdWithUsers", ActionInfo{{"library-management.getByIdWithUsers"}}},
+        {"library-management.getBooksWithUsers", ActionInfo{{"library-management.getBooksWithUsers"}}},
+
         {"library-management.rentBook", ActionInfo{{"user-management.getById", "library-management.rentBook"}}},
         {"library-management.deliverBook", ActionInfo{{"library-management.deliverBook"}}},
         {"library-management.getUserBookList", ActionInfo{{"library-management.getUserBookList"}}},

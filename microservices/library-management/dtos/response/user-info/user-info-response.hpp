@@ -1,8 +1,8 @@
 #ifndef USER_INFO_RESPONSE_HPP
 #define USER_INFO_RESPONSE_HPP
 
-#include <chrono>
 #include <string>
+#include <../../../../infrastructure/nlohmann-extensions.hpp>
 
 using namespace std;
 
