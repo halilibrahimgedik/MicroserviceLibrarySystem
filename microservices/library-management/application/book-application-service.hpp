@@ -112,7 +112,10 @@ namespace BookApplicationService {
     }
 
     void inline updateUserToBooks(const UserInfoRequest& userInfo, const mongocxx::pool::entry& client) {
-        BookService::updateUserToBooks(static_cast<bsoncxx::oid>(userInfo.userId), userInfo.fullname, userInfo.email, userInfo.rentedDate, Utility::parseDate(userInfo.dueDate), client);
+        BookService::updateUserToBooks(
+            static_cast<bsoncxx::oid>(userInfo.userId),
+            userInfo.fullname, userInfo.email,
+            client);
     }
 
 }

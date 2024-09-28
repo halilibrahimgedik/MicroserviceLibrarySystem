@@ -50,8 +50,8 @@ namespace BookService {
         BookRepository::deleteUserToBooks(userId, client);
     }
 
-    void inline updateUserToBooks(const bsoncxx::oid& userId, const string& fullname, const string& email, const chrono::system_clock::time_point& rentedDate, const chrono::system_clock::time_point& dueDate, const mongocxx::pool::entry& client) {
-        BookRepository::updateUserToBooks(userId, fullname, email, rentedDate, dueDate, client);
+    void inline updateUserToBooks(const bsoncxx::oid& userId, const string& fullname, const string& email, const mongocxx::pool::entry& client) {
+        BookRepository::updateUserToBooks(userId, fullname, email, client);
     }
 
 }

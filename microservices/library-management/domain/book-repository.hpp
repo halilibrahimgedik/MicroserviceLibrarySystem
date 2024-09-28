@@ -181,7 +181,7 @@ namespace BookRepository {
         collection.update_many(filter.view(), update.view());
     }
 
-    void inline updateUserToBooks(const bsoncxx::oid& userId, const string& fullname, const string& email, const chrono::system_clock::time_point& rentedDate, const chrono::system_clock::time_point& dueDate, const mongocxx::pool::entry& client) {
+    void inline updateUserToBooks(const bsoncxx::oid& userId, const string& fullname, const string& email, const mongocxx::pool::entry& client) {
 
         auto collection = (*client)["BooksDb"]["books"];
 
@@ -191,9 +191,7 @@ namespace BookRepository {
         bsoncxx::builder::basic::document update{};
         update.append(kvp("$set", make_document(
             kvp("users.$.fullname", fullname),
-            kvp("users.$.email", email),
-            kvp("users.$.rentedDate", bsoncxx::types::b_date(rentedDate)),
-            kvp("users.$.dueDate", bsoncxx::types::b_date(dueDate))
+            kvp("users.$.email", email)
         )));
 
         collection.update_many(filter.view(), update.view());

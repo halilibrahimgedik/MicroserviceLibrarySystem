@@ -123,6 +123,7 @@ namespace MessageListener {
             MessageDto message = Utility::getMessage(body.data(), body.size());
 
             UserInfoRequest userInfo = message.serviceData;
+            userInfo.dueDate = message.serviceData["dueDate"].get<string>();
             userInfo.rentedDate = chrono::system_clock::now();
 
             const auto client = pool.acquire();
