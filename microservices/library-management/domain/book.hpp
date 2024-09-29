@@ -16,10 +16,11 @@ class Book {
 
 public:
     Book() = default;
-    Book(string name, string author, const vector<UserInfo>& users = {})
-        : id(id), name(move(name)), author(move(author)), users(users) {};
-    Book(const bsoncxx::oid& id, string name, string author, const vector<UserInfo>& users = {})
-        : id(id), name(move(name)), author(move(author)), users(users){};
+    Book(string name, string author, string summary, string imageUrl, const vector<UserInfo>& users = {})
+        : name(move(name)), author(move(author)), summary(move(summary)),imageUrl(move(imageUrl)), users(users) {};
+
+    Book(const bsoncxx::oid& id, string name, string author, string summary, string imageUrl, const vector<UserInfo>& users = {})
+        : id(id), name(move(name)), author(move(author)), summary(move(summary)),imageUrl(move(imageUrl)), users(users){};
 
 
     bool operator==(const Book& other) const {
@@ -33,6 +34,8 @@ public:
     bsoncxx::oid id;
     string name;
     string author;
+    string summary;
+    string imageUrl;
     vector<UserInfo> users;
 };
 

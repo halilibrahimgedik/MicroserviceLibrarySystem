@@ -13,9 +13,10 @@ namespace BookService {
         return BookRepository::getBookByIdWithUsers(id, client);
     }
 
-    Book inline createBook(const string& name, const string& author, const mongocxx::pool::entry& client) {
-        const auto document = BookFactory::generateBook(name, author);
-        return BookRepository::createBook(document, client);
+    Book inline createBook(const string& name, const string& author, const string& summary,
+        const string& imageUrl, const mongocxx::pool::entry& client) {
+            const auto document = BookFactory::generateBook(name, author,summary, imageUrl);
+            return BookRepository::createBook(document, client);
     }
 
     vector<Book> inline getBookList(const mongocxx::pool::entry& client) {
@@ -26,8 +27,8 @@ namespace BookService {
         BookRepository::deleteBook(id, client);
     }
 
-    void inline updateBook(const bsoncxx::oid& bookId, const string& name, const string& author, const mongocxx::pool::entry& client) {
-        BookRepository::updateBook(bookId, name, author, client);
+    void inline updateBook(const bsoncxx::oid& bookId, const string& name, const string& author, const string& summary, const string& imageUrl, const mongocxx::pool::entry& client) {
+        BookRepository::updateBook(bookId, name, author, summary, imageUrl, client);
     }
 
     vector<Book> inline getBooksWithUsers(const mongocxx::pool::entry& client) {

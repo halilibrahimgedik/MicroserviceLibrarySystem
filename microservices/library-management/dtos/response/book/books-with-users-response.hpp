@@ -11,15 +11,20 @@ public:
 
     struct BookResponse {
         BookResponse() = default;
-        BookResponse( string bookId, string bookName, string bookAuthor, const vector<UserInfoResponse>& users = {})
-         : bookId(move(bookId)), name(std::move(bookName)), author(std::move(bookAuthor)), users(users) {};
+        BookResponse( string bookId, string bookName, string bookAuthor, string summary, string imageUrl,
+                      const vector<UserInfoResponse>& users = {})
+        :
+        bookId(move(bookId)), name(std::move(bookName)), author(std::move(bookAuthor)),
+        summary(move(summary)), imageUrl(move(imageUrl)), users(users) {};
 
         string bookId;
         string name;
         string author;
+        string summary;
+        string imageUrl;
         vector<UserInfoResponse> users;
 
-        NLOHMANN_DEFINE_TYPE_INTRUSIVE(BookResponse, bookId, name, author, users);
+        NLOHMANN_DEFINE_TYPE_INTRUSIVE(BookResponse, bookId, name, author, summary, imageUrl, users);
     };
 
     vector<BookResponse> books;

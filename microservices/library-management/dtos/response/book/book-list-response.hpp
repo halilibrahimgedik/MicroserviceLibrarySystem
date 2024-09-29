@@ -9,14 +9,16 @@ public:
 
     struct BookResponse {
         BookResponse() = default;
-        BookResponse( std::string bookId, std::string bookName, std::string bookAuthor)
-         : bookId(std::move(bookId)), name(std::move(bookName)), author(std::move(bookAuthor)) {};
+        BookResponse( std::string bookId, std::string bookName, std::string bookAuthor, std::string summary, std::string imageUrl  )
+         : bookId(std::move(bookId)), name(std::move(bookName)), author(std::move(bookAuthor)), summary(std::move(summary)), imageUrl(std::move(imageUrl)) {};
 
         std::string bookId;
         std::string name;
         std::string author;
+        std::string summary;
+        std::string imageUrl;
 
-        NLOHMANN_DEFINE_TYPE_INTRUSIVE(BookResponse, bookId, name, author);
+        NLOHMANN_DEFINE_TYPE_INTRUSIVE(BookResponse, bookId, name, author, summary, imageUrl);
     };
 
     std::vector<BookResponse> books;

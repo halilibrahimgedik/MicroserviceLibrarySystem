@@ -57,7 +57,7 @@ namespace BookRepository {
         collection.delete_one(filter.view());
     }
 
-    void inline updateBook(const bsoncxx::oid& bookId, const string& name, const string& author, const mongocxx::pool::entry& client) {
+    void inline updateBook(const bsoncxx::oid& bookId, const string& name, const string& author, const string& summary, const string& imageUrl, const mongocxx::pool::entry& client) {
         auto collection = (*client)["BooksDb"]["books"];
 
         bsoncxx::builder::basic::document filter{};
@@ -67,7 +67,9 @@ namespace BookRepository {
         updateFilter.append(kvp("$set",
            make_document(
                    kvp("name", name),
-                   kvp("author", author)
+                   kvp("author", author),
+                   kvp("summary", summary),
+                   kvp("imageUrl", imageUrl)
                )
            )
        );
@@ -75,19 +77,19 @@ namespace BookRepository {
         collection.update_one(filter.view(), updateFilter.view());
     }
 
-    bool inline any(const Book& book, const mongocxx::pool::entry& client) {
-        auto collection = (*client)["BooksDb"]["books"];
-
-        bsoncxx::builder::basic::document filter{};
-        filter.append(
-            kvp("name", book.name),
-            kvp("author", book.author)
-        );
-
-        const auto result = collection.find_one(filter.view());
-
-        return result.has_value();
-    }
+    // bool inline any(const Book& book, const mongocxx::pool::entry& client) {
+    //     auto collection = (*client)["BooksDb"]["books"];
+    //
+    //     bsoncxx::builder::basic::document filter{};
+    //     filter.append(
+    //         kvp("name", book.name),
+    //         kvp("author", book.author)
+    //     );
+    //
+    //     const auto result = collection.find_one(filter.view());
+    //
+    //     return result.has_value();
+    // }
 
 
     vector<Book> inline getBooksWithUsers(const mongocxx::pool::entry& client) {
@@ -150,7 +152,9 @@ namespace BookRepository {
         pipeline.project(make_document(
             kvp("_id", 1),  // Kitap ID'sini dahil et
             kvp("name", 1),  // Kitap başlığını dahil et
-            kvp("author", 1),  // Yazar bilgisi
+            kvp("author", 1),  // Yazar bilgisi dahil et
+            kvp("summary", 1),  // özet bilgisi dahil et
+            kvp("imageUrl", 1),  // resim bilgisi dahil et
             kvp("users", make_document(
                 kvp("$filter", make_document(  // Sadece ilgili kullanıcıyı seçiyoruz
                     kvp("input", "$users"),

@@ -10,16 +10,19 @@ using bsoncxx::builder::basic::make_document;
 
 namespace BookFactory {
 
-    bsoncxx::builder::basic::document inline generateBook(const string& name, const string& author) {
-        bsoncxx::builder::basic::array userArray;
-        bsoncxx::builder::basic::document doc;
-        doc.append(
-            kvp("name", name),
-            kvp("author", author),
-            kvp("users", userArray)
-        );
+    bsoncxx::builder::basic::document inline generateBook(const string& name, const string& author,
+        const string& summary, const string& imageUrl) {
+            bsoncxx::builder::basic::array userArray;
+            bsoncxx::builder::basic::document doc;
+            doc.append(
+                kvp("name", name),
+                kvp("author", author),
+                kvp("summary", summary),
+                kvp("imageUrl", imageUrl),
+                kvp("users", userArray)
+            );
 
-        return doc;
+            return doc;
     }
 
     Book inline generateBookById(const bsoncxx::document::value& docValue) {
@@ -27,6 +30,8 @@ namespace BookFactory {
         book.id = docValue["_id"].get_oid().value;
         book.name = docValue["name"].get_string().value;
         book.author = docValue["author"].get_string().value;
+        book.summary = docValue["summary"].get_string().value;
+        book.imageUrl = docValue["imageUrl"].get_string().value;
 
         return book;
     }
@@ -37,6 +42,8 @@ namespace BookFactory {
         book.id = docValue["_id"].get_oid().value;
         book.name = docValue["name"].get_string().value;
         book.author = docValue["author"].get_string().value;
+        book.summary = docValue["summary"].get_string().value;
+        book.imageUrl = docValue["imageUrl"].get_string().value;
 
         if( docValue["users"] && !docValue["users"].get_array().value.empty()) {
             for (const auto& userData : docValue["users"].get_array().value) {
@@ -63,6 +70,8 @@ namespace BookFactory {
             book.id = document["_id"].get_oid().value;
             book.name = document["name"].get_string().value;
             book.author = document["author"].get_string().value;
+            book.summary = document["summary"].get_string().value;
+            book.imageUrl = document["imageUrl"].get_string().value;
 
             books.push_back(std::move(book));
         }
@@ -97,6 +106,8 @@ namespace BookFactory {
             book.id = document["_id"].get_oid().value;
             book.name = document["name"].get_string().value;
             book.author = document["author"].get_string().value;
+            book.summary = document["summary"].get_string().value;
+            book.imageUrl = document["imageUrl"].get_string().value;
 
             for (const auto& userDoc : document["users"].get_array().value) {
                 UserInfo userInfo;
@@ -122,6 +133,8 @@ namespace BookFactory {
             book.id = document["_id"].get_oid().value;
             book.name = document["name"].get_string().value;
             book.author = document["author"].get_string().value;
+            book.summary = document["summary"].get_string().value;
+            book.imageUrl = document["imageUrl"].get_string().value;
 
             for(const auto& userDoc : document["users"].get_array().value) {
                 UserInfo userInfo;

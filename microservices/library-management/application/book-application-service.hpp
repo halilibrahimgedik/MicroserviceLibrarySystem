@@ -20,12 +20,12 @@ namespace BookApplicationService {
 
     BookByIdResponse inline  getBookById(const bsoncxx::oid& id, const mongocxx::pool::entry& client) {
         const auto book = BookService::getBookById(id, client);
-        return {book.id.to_string(), book.name, book.author};
+        return {book.id.to_string(), book.name, book.author, book.summary, book.imageUrl};
     }
 
     CreateBookResponse inline createBook(const CreateBookRequest& dto, const mongocxx::pool::entry& client) {
-        const auto book = BookService::createBook(dto.name,dto.author,client);
-        return {book.id.to_string(), book.name, book.author};
+        const auto book = BookService::createBook(dto.name,dto.author,dto.summary,dto.imageUrl,client);
+        return {book.id.to_string(), book.name, book.author, book.summary, book.imageUrl};
     }
 
     BookListResponse inline getBookList(const mongocxx::pool::entry& client) {
@@ -33,7 +33,7 @@ namespace BookApplicationService {
 
         BookListResponse bookListResponse;
         for (const auto& book : bookList) {
-            BookListResponse::BookResponse bookResponse {book.id.to_string(), book.name, book.author};
+            BookListResponse::BookResponse bookResponse {book.id.to_string(), book.name, book.author, book.summary, book.imageUrl};
             bookListResponse.books.push_back(std::move(bookResponse));
         }
 
@@ -45,7 +45,7 @@ namespace BookApplicationService {
     }
 
     void inline updateBook(const UpdateBookRequest& book, const mongocxx::pool::entry& client) {
-        BookService::updateBook(static_cast<bsoncxx::oid>(book.bookId), book.name, book.author, client);
+        BookService::updateBook(static_cast<bsoncxx::oid>(book.bookId), book.name, book.author, book.summary, book.imageUrl, client);
     }
 
 
@@ -55,7 +55,7 @@ namespace BookApplicationService {
         BooksWithUsersResponse bookList;
         for (const auto& book : books) {
 
-            BooksWithUsersResponse::BookResponse bookResponse {book.id.to_string(), book.name, book.author};
+            BooksWithUsersResponse::BookResponse bookResponse {book.id.to_string(), book.name, book.author, book.summary, book.imageUrl};
             for(const auto& user : book.users) {
                 UserInfoResponse userInfoResponse {user.userId.to_string(), user.fullname, user.email, Utility::formatDate(user.rentedDate), Utility::formatDate(user.dueDate), user.isDelivered};
                 bookResponse.users.push_back(move(userInfoResponse));
@@ -75,7 +75,7 @@ namespace BookApplicationService {
             userInfoResponse.emplace_back(user.userId.to_string(), user.fullname, user.email, Utility::formatDate(user.rentedDate), Utility::formatDate(user.dueDate), user.isDelivered);
         }
 
-        return  {book.id.to_string(), book.name, book.author, userInfoResponse};
+        return  {book.id.to_string(), book.name, book.author, book.summary, book.imageUrl, userInfoResponse};
     }
 
 
@@ -91,9 +91,12 @@ namespace BookApplicationService {
     UserBookListResponse inline getUserBookList(const bsoncxx::oid& userId, const mongocxx::pool::entry& client) {
         const auto books = BookService::getUserBookList(userId, client);
 
+        std::cerr << books[0].summary << endl;
+        std::cerr << books[0].imageUrl << endl;
         UserBookListResponse bookList;
         for(const auto& book : books) {
-            UserBookListResponse::UserBookResponse userBookResponse{book.id.to_string(),book.name,book.author};
+            UserBookListResponse::UserBookResponse userBookResponse{
+                book.id.to_string(),book.name, book.author, book.summary, book.imageUrl };
 
             for(const auto& user : book.users) {
                 userBookResponse.dueDate = Utility::formatDate(user.dueDate);
